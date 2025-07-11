@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:html' as html;
+import 'dart:ui_web' as ui_web;
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'crtl alt tequila App',
+      title: 'Ctrl Alt Tequila App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -27,32 +29,44 @@ class ChatbotPage extends StatefulWidget {
 }
 
 class _ChatbotPageState extends State<ChatbotPage> {
-  late final WebViewController _controller;
+  final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/05/20/07/20250520070817-XQE31ND4.json';
 
   @override
   void initState() {
     super.initState();
-    // Add timestamp to force cache refresh
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..clearCache()
-      ..clearLocalStorage()
-      ..loadRequest(Uri.parse(
-          'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/05/20/07/20250520070817-XQE31ND4.json&t=$timestamp'));
+    if (kIsWeb) {
+      // Register the iframe view for web
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      ui_web.platformViewRegistry.registerViewFactory(
+        'chatbot-iframe',
+        (int viewId) {
+          final iframe = html.IFrameElement()
+            ..src = '$chatbotUrl&t=$timestamp'
+            ..style.border = 'none'
+            ..style.width = '100%'
+            ..style.height = '100%';
+          return iframe;
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('crtl alt tequila', style: TextStyle(color: Colors.white)),
+        title: Text('Ctrl Alt Tequila', style: TextStyle(color: Colors.white)),
         backgroundColor: Theme.of(context).primaryColor,
         iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => _controller.reload(),
+            onPressed: () {
+              if (kIsWeb) {
+                // Reload the page on web
+                html.window.location.reload();
+              }
+            },
             tooltip: 'Refresh Chat',
           ),
         ],
@@ -82,7 +96,18 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   ),
                 ],
               ),
-              child: WebViewWidget(controller: _controller),
+              child: kIsWeb
+                  ? const HtmlElementView(viewType: 'chatbot-iframe')
+                  : Center(
+                      child: Text(
+                        'This app is designed for web browsers.\nPlease open it in a web browser to use the chatbot.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
             ),
           ),
         ),
