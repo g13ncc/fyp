@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:html' as html;
-import 'dart:ui_web' as ui_web;
+
+// Conditional imports
+import 'mobile_chatbot.dart' if (dart.library.html) 'web_chatbot.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,26 +33,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/05/20/07/20250520070817-XQE31ND4.json';
 
   @override
-  void initState() {
-    super.initState();
-    if (kIsWeb) {
-      // Register the iframe view for web
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      ui_web.platformViewRegistry.registerViewFactory(
-        'chatbot-iframe',
-        (int viewId) {
-          final iframe = html.IFrameElement()
-            ..src = '$chatbotUrl&t=$timestamp'
-            ..style.border = 'none'
-            ..style.width = '100%'
-            ..style.height = '100%';
-          return iframe;
-        },
-      );
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -62,10 +43,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
-              if (kIsWeb) {
-                // Reload the page on web
-                html.window.location.reload();
-              }
+              // The refresh logic will be handled by each platform's widget
             },
             tooltip: 'Refresh Chat',
           ),
@@ -96,18 +74,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   ),
                 ],
               ),
-              child: kIsWeb
-                  ? const HtmlElementView(viewType: 'chatbot-iframe')
-                  : Center(
-                      child: Text(
-                        'This app is designed for web browsers.\nPlease open it in a web browser to use the chatbot.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ),
+              child: ChatbotWidget(chatbotUrl: chatbotUrl),
             ),
           ),
         ),
