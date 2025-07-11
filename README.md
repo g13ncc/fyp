@@ -1,16 +1,64 @@
-# c240fa_appfinal
+# Ctrl Alt Tequila - Flutter Chatbot App
 
-A new Flutter project.
+A Flutter application featuring an AI chatbot powered by Botpress integration.
+
+## Features
+
+- 🤖 AI Chatbot with Botpress integration
+- 📱 Cross-platform (iOS, Android, Web, Desktop)
+- 🎨 Modern Material Design UI
+- 🔄 Refresh functionality for chat
+- 📐 Responsive design with gradient backgrounds
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter SDK (3.7.2 or higher)
+- Dart SDK
+- A device/emulator to run the app
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Installation
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Clone this repository:
+```bash
+git clone https://github.com/YOUR_USERNAME/c240fa_appfinal.git
+cd c240fa_appfinal
+```
+
+2. Install dependencies:
+```bash
+flutter pub get
+```
+
+3. Run the app:
+```bash
+flutter run
+```
+
+## Dependencies
+
+- `flutter`: SDK
+- `webview_flutter`: ^4.13.0 - For embedding the Botpress chatbot
+- `cupertino_icons`: ^1.0.8 - iOS style icons
+
+## Chatbot Integration
+
+This app integrates with Botpress cloud chatbot service. The chatbot is embedded using a WebView component that loads the Botpress shareable chat interface.
+
+## Platforms Supported
+
+- ✅ Android
+- ✅ iOS  
+- ✅ Web
+- ✅ Windows
+- ✅ macOS
+- ✅ Linux
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
+
+## License
+
+This project is licensed under the MIT License.
