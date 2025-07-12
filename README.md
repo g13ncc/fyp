@@ -1,6 +1,6 @@
-# Ctrl Alt Tequila - Flutter Chatbot App
+# Ctrl Alt Tequila - Flutter Python Learn App
 
-A Flutter application featuring an AI chatbot powered by Botpress integration.
+A Flutter application featuring AI chatbot powered by Botpress integration.
 
 ## Features
 
@@ -8,7 +8,7 @@ A Flutter application featuring an AI chatbot powered by Botpress integration.
 - 📱 Cross-platform (iOS, Android, Web, Desktop)
 - 🎨 Modern Material Design UI
 - 🔄 Refresh functionality for chat
-- 📐 Responsive design with gradient backgrounds
+- 📐 Responsive design with minimalistic backgrounds
 
 ## Getting Started
 
@@ -61,4 +61,4 @@ Feel free to submit issues and enhancement requests!
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the RP License.
