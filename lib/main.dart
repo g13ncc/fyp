@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Study Buddy App',
+      title: 'Study With Tequila',
       theme: ThemeData(
         primarySwatch: MaterialColor(0xFFB8A9FF, {
           50: Color(0xFFF3F1FF),
@@ -98,7 +98,7 @@ class MenuPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('📚 Study Buddy'),
+        title: Text('📚 Study With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
       body: Container(
@@ -136,7 +136,7 @@ class MenuPage extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        '✨ Welcome to Study Buddy! ✨',
+                        '✨ Welcome to Study With Tequila! ✨',
                         style: Theme.of(context).textTheme.headlineMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -159,31 +159,31 @@ class MenuPage extends StatelessWidget {
                     children: [
                       _buildMenuCard(
                         context,
-                        '📝 Study Tips',
+                        '📝 Tips With Tequila',
                         'Get helpful study strategies',
                         StudyTipsPage(),
                       ),
                       _buildMenuCard(
                         context,
-                        '🔧 Debugger',
+                        '🔧 Tutor With Tequila',
                         'Fix your coding problems',
                         DebuggerPage(),
                       ),
                       _buildMenuCard(
                         context,
-                        '🎓 Classes',
+                        '🎓 Classes With Tequila',
                         'Chat with your AI tutor',
                         ClassesPage(),
                       ),
                       _buildMenuCard(
                         context,
-                        '📊 Quiz',
+                        '📊 Quiz With Tequila',
                         'Test your knowledge',
                         QuizPage(),
                       ),
                       _buildMenuCard(
                         context,
-                        '📅 Scheduler',
+                        '📅 Plan With Tequila',
                         'Plan your study time',
                         SchedulerPage(),
                       ),
@@ -256,7 +256,7 @@ class StudyTipsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('📝 Study Tips'),
+        title: Text('📝 Tips With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
       body: Container(
@@ -314,7 +314,7 @@ class DebuggerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('🔧 General Debugger'),
+        title: Text('🔧 Tutor With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
       body: Container(
@@ -374,7 +374,7 @@ class ClassesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('🎓 AI Tutor'),
+        title: Text('🎓 Classes With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
         actions: [
           IconButton(
@@ -428,7 +428,7 @@ class QuizPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('📊 Quiz'),
+        title: Text('📊 Quiz With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
       body: Container(
@@ -486,7 +486,7 @@ class SchedulerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('📅 Scheduler'),
+        title: Text('📅 Plan With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
       body: Container(
