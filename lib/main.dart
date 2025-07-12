@@ -252,12 +252,23 @@ class MenuPage extends StatelessWidget {
 
 // Study Tips Page
 class StudyTipsPage extends StatelessWidget {
+  final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/07/11/22/20250711221212-WDZPSQLY.json';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('📝 Tips With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: () {
+              // Refresh functionality handled by the widget
+            },
+            tooltip: 'Refresh Chat',
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -270,36 +281,23 @@ class StudyTipsPage extends StatelessWidget {
             ],
           ),
         ),
-        child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
           child: Container(
-            margin: EdgeInsets.all(20),
-            padding: EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '🌟 Coming Soon! 🌟',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Amazing study tips and strategies will be available here soon!',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: ChatbotWidget(chatbotUrl: chatbotUrl),
             ),
           ),
         ),
@@ -310,12 +308,23 @@ class StudyTipsPage extends StatelessWidget {
 
 // Debugger Page
 class DebuggerPage extends StatelessWidget {
+  final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/07/10/03/20250710032140-3G7MB8QP.json';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('🔧 Tutor With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: () {
+              // Refresh functionality handled by the widget
+            },
+            tooltip: 'Refresh Chat',
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -328,36 +337,23 @@ class DebuggerPage extends StatelessWidget {
             ],
           ),
         ),
-        child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
           child: Container(
-            margin: EdgeInsets.all(20),
-            padding: EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '🛠️ Coming Soon! 🛠️',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Powerful debugging tools will be available here soon!',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: ChatbotWidget(chatbotUrl: chatbotUrl),
             ),
           ),
         ),
@@ -424,12 +420,23 @@ class ClassesPage extends StatelessWidget {
 
 // Quiz Page
 class QuizPage extends StatelessWidget {
+  final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/07/11/16/20250711162752-QO1HSUSS.json';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('📊 Quiz With Tequila'),
         backgroundColor: Theme.of(context).colorScheme.secondary,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: () {
+              // Refresh functionality handled by the widget
+            },
+            tooltip: 'Refresh Chat',
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -442,36 +449,23 @@ class QuizPage extends StatelessWidget {
             ],
           ),
         ),
-        child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
           child: Container(
-            margin: EdgeInsets.all(20),
-            padding: EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '🧠 Coming Soon! 🧠',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Interactive quizzes and assessments will be available here soon!',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: ChatbotWidget(chatbotUrl: chatbotUrl),
             ),
           ),
         ),
