@@ -1,6 +1,7 @@
 # Ctrl Alt Tequila - Flutter Python Learn App
 
 A Flutter application featuring AI chatbot powered by Botpress integration.
+For Republic Polytechnic's C240 module Final Assessment
 
 ## Features
 
