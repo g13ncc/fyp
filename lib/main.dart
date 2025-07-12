@@ -172,7 +172,7 @@ class MenuPage extends StatelessWidget {
                       _buildMenuCard(
                         context,
                         '🎓 Classes With Tequila',
-                        'Chat with your AI tutor',
+                        'Enroll in our classes',
                         ClassesPage(),
                       ),
                       _buildMenuCard(
@@ -476,6 +476,64 @@ class QuizPage extends StatelessWidget {
 
 // Scheduler Page
 class SchedulerPage extends StatelessWidget {
+  final String telegramBotUrl = 'https://t.me/tequilaplan_bot';
+
+  void _showTelegramBotInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            '🍹 Tequila Plan Bot',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'To chat with our Telegram bot, please:',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              SizedBox(height: 15),
+              Text(
+                '1. Copy the link below\n2. Open Telegram app or web.telegram.org\n3. Paste and visit the link',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  telegramBotUrl,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    color: Colors.blue[800],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Got it!'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -512,15 +570,51 @@ class SchedulerPage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '⏰ Coming Soon! ⏰',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
+                Icon(
+                  Icons.telegram,
+                  size: 64,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 SizedBox(height: 20),
                 Text(
-                  'Smart scheduling and time management tools will be available here soon!',
+                  '🍹 Tequila Plan Bot',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 15),
+                Text(
+                  'Chat with our Telegram bot for personalized planning assistance!',
                   style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 30),
+                ElevatedButton.icon(
+                  onPressed: () => _showTelegramBotInfo(context),
+                  icon: Icon(Icons.chat, color: Colors.white),
+                  label: Text(
+                    'Get Telegram Bot Link',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF0088cc), // Telegram blue
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    elevation: 5,
+                  ),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  'Click to get the bot link and instructions',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],

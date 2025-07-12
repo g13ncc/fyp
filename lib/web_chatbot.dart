@@ -13,19 +13,25 @@ class ChatbotWidget extends StatefulWidget {
 }
 
 class _ChatbotWidgetState extends State<ChatbotWidget> {
+  String? _viewType;
+
   @override
   void initState() {
     super.initState();
-    // Register the iframe view for web
+    // Create unique view type for each instance
     final timestamp = DateTime.now().millisecondsSinceEpoch;
+    _viewType = 'chatbot-iframe-$timestamp';
+    
+    // Register the iframe view for web
     ui_web.platformViewRegistry.registerViewFactory(
-      'chatbot-iframe',
+      _viewType!,
       (int viewId) {
         final iframe = html.IFrameElement()
           ..src = '${widget.chatbotUrl}&t=$timestamp'
           ..style.border = 'none'
           ..style.width = '100%'
-          ..style.height = '100%';
+          ..style.height = '100%'
+          ..allowFullscreen = true;
         return iframe;
       },
     );
@@ -33,6 +39,8 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return const HtmlElementView(viewType: 'chatbot-iframe');
+    return _viewType != null 
+        ? HtmlElementView(viewType: _viewType!)
+        : const Center(child: CircularProgressIndicator());
   }
 }
