@@ -15,7 +15,6 @@ class _ChatbotWidgetState extends State<ChatbotWidget> {
   late final WebViewController _controller;
 
   @override
-  @override
   void initState() {
     super.initState();
     final timestamp = DateTime.now().millisecondsSinceEpoch;

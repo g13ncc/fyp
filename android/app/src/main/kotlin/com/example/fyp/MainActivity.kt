@@ -1,4 +1,4 @@
-package com.example.c240fa_appfinal
+package com.example.fyp
 
 import io.flutter.embedding.android.FlutterActivity
 
