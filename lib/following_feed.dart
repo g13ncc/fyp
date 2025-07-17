@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'app_bottom_navigation.dart';
+import 'new_post_modal.dart';
+import 'edit_post_modal.dart';
+import 'comments_modal.dart';
+import 'social_profile_modal.dart';
+import 'points_system_modal.dart';
 
 class FollowingFeedPage extends StatelessWidget {
   @override
@@ -181,7 +186,12 @@ class FollowingFeedPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => NewPostModal(),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFB91C1C),
                         foregroundColor: Colors.white,

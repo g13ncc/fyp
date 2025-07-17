@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           background: Color(0xFFF5F5F5),
         ),
         useMaterial3: true,
-        fontFamily: 'System',
+        fontFamily: kIsWeb ? 'Roboto' : null,
         textTheme: TextTheme(
           headlineLarge: TextStyle(
             fontSize: 28,
