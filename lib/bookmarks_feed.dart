@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_bottom_navigation.dart';
 import 'new_post_modal.dart';
-import 'edit_post_modal.dart';
-import 'comments_modal.dart';
-import 'social_profile_modal.dart';
-import 'points_system_modal.dart';
 
 class BookmarksFeedPage extends StatelessWidget {
   @override

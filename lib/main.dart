@@ -4,9 +4,6 @@ import 'package:flutter/foundation.dart';
 // Conditional imports
 import 'mobile_chatbot.dart' if (dart.library.html) 'web_chatbot.dart';
 import 'all_posts.dart';
-import 'following_feed.dart';
-import 'likes_feed.dart';
-import 'bookmarks_feed.dart';
 
 void main() {
   runApp(const MyApp());

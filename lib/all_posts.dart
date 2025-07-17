@@ -4,7 +4,7 @@ import 'new_post_modal.dart';
 import 'edit_post_modal.dart';
 import 'comments_modal.dart';
 import 'social_profile_modal.dart';
-import 'points_system_modal.dart';
+import 'main.dart';
 
 class AllPostsPage extends StatelessWidget {
   @override
@@ -24,6 +24,18 @@ class AllPostsPage extends StatelessWidget {
         ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.black),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.chat_bubble_outline, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatbotPage()),
+              );
+            },
+            tooltip: 'Chat with Agent',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

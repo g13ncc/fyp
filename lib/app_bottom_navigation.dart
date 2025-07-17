@@ -3,7 +3,7 @@ import 'all_posts.dart';
 import 'following_feed.dart';
 import 'likes_feed.dart';
 import 'bookmarks_feed.dart';
-import 'main.dart';
+import 'my_profile_page.dart';
 
 class AppBottomNavigation extends StatelessWidget {
   final String currentPage;
@@ -71,12 +71,12 @@ class AppBottomNavigation extends StatelessWidget {
               ),
               _buildNavItem(
                 context,
-                Icons.chat_bubble_outline,
-                'Chat',
-                currentPage == 'chat',
-                () => Navigator.push(
+                Icons.person_outline,
+                'Profile',
+                currentPage == 'profile',
+                () => Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => ChatbotPage()),
+                  MaterialPageRoute(builder: (context) => MyProfilePage()),
                 ),
               ),
             ],
