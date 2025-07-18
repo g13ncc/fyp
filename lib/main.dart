@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'firebase_service.dart';
+import 'auth_page.dart';
 
 // Conditional imports
 import 'mobile_chatbot.dart' if (dart.library.html) 'web_chatbot.dart';
@@ -94,7 +96,26 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: AllPostsPage(),
+      home: StreamBuilder(
+        stream: FirebaseService.authStateChanges,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          
+          if (snapshot.hasData) {
+            // User is logged in
+            return AllPostsPage();
+          } else {
+            // User is not logged in
+            return AuthPage();
+          }
+        },
+      ),
     );
   }
 }
