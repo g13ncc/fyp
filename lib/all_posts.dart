@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'app_bottom_navigation.dart';
+import 'new_post_modal.dart';
+import 'edit_post_modal.dart';
+import 'comments_modal.dart';
+import 'social_profile_modal.dart';
+import 'main.dart';
 
 class AllPostsPage extends StatelessWidget {
   @override
@@ -19,6 +24,18 @@ class AllPostsPage extends StatelessWidget {
         ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.black),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.chat_bubble_outline, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatbotPage()),
+              );
+            },
+            tooltip: 'Chat with Agent',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -93,34 +110,58 @@ class AllPostsPage extends StatelessWidget {
                           // User info
                           Row(
                             children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(Icons.person, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => SocialProfileModal(),
+                                  );
+                                },
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey[300],
+                                  child: Icon(Icons.person, color: Colors.grey[600]),
+                                ),
                               ),
                               SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Full Name',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => SocialProfileModal(),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Full Name',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'Text',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
+                                      Text(
+                                        'Text',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                              Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => EditPostModal(),
+                                  );
+                                },
+                                child: Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              ),
                             ],
                           ),
                           
@@ -163,7 +204,15 @@ class AllPostsPage extends StatelessWidget {
                               SizedBox(width: 4),
                               Text('Count', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                               SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => CommentsModal(),
+                                  );
+                                },
+                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              ),
                               SizedBox(width: 4),
                               Text('Count', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                               Spacer(),
@@ -198,34 +247,58 @@ class AllPostsPage extends StatelessWidget {
                           // User info
                           Row(
                             children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(Icons.person, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => SocialProfileModal(),
+                                  );
+                                },
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey[300],
+                                  child: Icon(Icons.person, color: Colors.grey[600]),
+                                ),
                               ),
                               SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Another User',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => SocialProfileModal(),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Another User',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'Security Tip',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
+                                      Text(
+                                        'Security Tip',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                              Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => EditPostModal(),
+                                  );
+                                },
+                                child: Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              ),
                             ],
                           ),
                           
@@ -270,7 +343,15 @@ class AllPostsPage extends StatelessWidget {
                               SizedBox(width: 4),
                               Text('15', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                               SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => CommentsModal(),
+                                  );
+                                },
+                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              ),
                               SizedBox(width: 4),
                               Text('3', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                               Spacer(),
@@ -305,34 +386,58 @@ class AllPostsPage extends StatelessWidget {
                           // User info
                           Row(
                             children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(Icons.person, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => SocialProfileModal(),
+                                  );
+                                },
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey[300],
+                                  child: Icon(Icons.person, color: Colors.grey[600]),
+                                ),
                               ),
                               SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Gen Secure',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => SocialProfileModal(),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Gen Secure',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'Official Account',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
+                                      Text(
+                                        'Official Account',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                              Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => EditPostModal(),
+                                  );
+                                },
+                                child: Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              ),
                             ],
                           ),
                           
@@ -378,7 +483,15 @@ class AllPostsPage extends StatelessWidget {
                               SizedBox(width: 4),
                               Text('42', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                               SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => CommentsModal(),
+                                  );
+                                },
+                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              ),
                               SizedBox(width: 4),
                               Text('8', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                               Spacer(),
@@ -396,7 +509,12 @@ class AllPostsPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => NewPostModal(),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFB91C1C),
                         foregroundColor: Colors.white,

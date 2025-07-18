@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_bottom_navigation.dart';
+import 'new_post_modal.dart';
 
 class BookmarksFeedPage extends StatelessWidget {
   @override
@@ -181,7 +182,12 @@ class BookmarksFeedPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => NewPostModal(),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFB91C1C),
                         foregroundColor: Colors.white,

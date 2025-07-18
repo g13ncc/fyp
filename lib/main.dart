@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // Conditional imports
 import 'mobile_chatbot.dart' if (dart.library.html) 'web_chatbot.dart';
 import 'all_posts.dart';
-import 'following_feed.dart';
-import 'likes_feed.dart';
-import 'bookmarks_feed.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -42,7 +45,7 @@ class MyApp extends StatelessWidget {
           background: Color(0xFFF5F5F5),
         ),
         useMaterial3: true,
-        fontFamily: 'System',
+        fontFamily: kIsWeb ? 'Roboto' : null,
         textTheme: TextTheme(
           headlineLarge: TextStyle(
             fontSize: 28,
