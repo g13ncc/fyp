@@ -1,0 +1,1 @@
+ C:\\fyp\\.dart_tool\\flutter_build\\47a71ed2e1025a836b677a2daaf897e6\\native_assets.json: 
