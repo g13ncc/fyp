@@ -1,12 +1,39 @@
 import 'package:flutter/material.dart';
+import 'firebase_service.dart';
 
 class CommentsModal extends StatefulWidget {
+  final String postId;
+
+  const CommentsModal({super.key, required this.postId});
+
   @override
   _CommentsModalState createState() => _CommentsModalState();
 }
 
 class _CommentsModalState extends State<CommentsModal> {
   final TextEditingController _commentController = TextEditingController();
+  bool _isPosting = false;
+
+  Future<void> _addComment() async {
+    if (_commentController.text.trim().isEmpty) return;
+
+    setState(() {
+      _isPosting = true;
+    });
+
+    try {
+      await FirebaseService.addComment(widget.postId, _commentController.text.trim());
+      _commentController.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error posting comment: $e')),
+      );
+    } finally {
+      setState(() {
+        _isPosting = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

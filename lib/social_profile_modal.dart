@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'points_system_modal.dart';
 
-class SocialProfileModal extends StatelessWidget {
+class SocialProfileModal extends StatefulWidget {
+  const SocialProfileModal({super.key});
+
+  @override
+  _SocialProfileModalState createState() => _SocialProfileModalState();
+}
+
+class _SocialProfileModalState extends State<SocialProfileModal> {
   @override
   Widget build(BuildContext context) {
     return Dialog(

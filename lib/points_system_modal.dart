@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class PointsSystemModal extends StatelessWidget {
+  const PointsSystemModal({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(

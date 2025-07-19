@@ -1,12 +1,288 @@
 import 'package:flutter/material.dart';
-import 'app_bottom_navigation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'new_post_modal.dart';
-import 'edit_post_modal.dart';
-import 'comments_modal.dart';
-import 'social_profile_modal.dart';
+import 'firebase_service.dart';
 import 'main.dart';
 
-class AllPostsPage extends StatelessWidget {
+class AllPostsPage extends StatefulWidget {
+  const AllPostsPage({super.key});
+
+  @override
+  _AllPostsPageState createState() => _AllPostsPageState();
+}
+
+class _AllPostsPageState extends State<AllPostsPage> {
+  Future<void> _deletePost(String postId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .delete();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Post deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting post: $e')),
+      );
+    }
+  }
+
+  Widget _buildPostCard(Map<String, dynamic> post, String postId) {
+    final currentUser = FirebaseService.getCurrentUser();
+    final isOwner = currentUser?.uid == post['userId'];
+    
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // User info
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // Profile functionality would go here
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Profile feature coming soon!')),
+                    );
+                  },
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Color(0xFFB91C1C),
+                    child: Text(
+                      post['userName']?[0]?.toUpperCase() ?? 'U',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        post['userName'] ?? 'Anonymous',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        post['timestamp'] != null
+                            ? DateFormat('MMM dd, yyyy at hh:mm a').format(
+                                (post['timestamp'] as Timestamp).toDate())
+                            : 'Just now',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isOwner) ...[
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        // Edit functionality would go here
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Edit feature coming soon!')),
+                        );
+                      } else if (value == 'delete') {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Delete Post'),
+                            content: Text('Are you sure you want to delete this post?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _deletePost(postId);
+                                },
+                                child: Text('Delete', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 18),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+            
+            SizedBox(height: 12),
+            
+            // Post content
+            if (post['content'] != null && post['content'].isNotEmpty)
+              Text(
+                post['content'],
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+              ),
+            
+            // Post image
+            if (post['imageUrl'] != null) ...[
+              SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  post['imageUrl'],
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Icon(Icons.image_not_supported, color: Colors.grey),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+            
+            SizedBox(height: 16),
+            
+            // Action buttons
+            Row(
+              children: [
+                // Like button
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('posts')
+                      .doc(postId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]);
+                    }
+                    
+                    final postData = snapshot.data!.data() as Map<String, dynamic>?;
+                    final likes = postData?['likes'] as List<dynamic>? ?? [];
+                    final isLiked = currentUser != null && likes.contains(currentUser.uid);
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        if (currentUser != null) {
+                          FirebaseService.toggleLike(postId);
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            size: 20,
+                            color: isLiked ? Colors.red : Colors.grey[600],
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '${likes.length}',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                
+                SizedBox(width: 20),
+                
+                // Comment button
+                GestureDetector(
+                  onTap: () {
+                    // Comments functionality would go here
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Comments feature coming soon!')),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                      SizedBox(width: 4),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('posts')
+                            .doc(postId)
+                            .collection('comments')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          final commentCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                          return Text(
+                            '$commentCount',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                
+                SizedBox(width: 20),
+                
+                // Bookmark button
+                Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,527 +299,120 @@ class AllPostsPage extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.black),
         actions: [
           IconButton(
-            icon: Icon(Icons.chat_bubble_outline, color: Colors.black),
-            onPressed: () {
-              Navigator.push(
+            icon: Icon(Icons.logout, color: Colors.black),
+            onPressed: () async {
+              await FirebaseService.signOut();
+              Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => ChatbotPage()),
+                MaterialPageRoute(builder: (context) => MyApp()),
               );
             },
-            tooltip: 'Chat with Agent',
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header section
-            Container(
+      body: Column(
+        children: [
+          // Posts feed
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseService.getAllPosts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.post_add, size: 64, color: Colors.grey[400]),
+                        SizedBox(height: 16),
+                        Text(
+                          'No posts yet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Be the first to share something!',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: EdgeInsets.all(16),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = snapshot.data!.docs[index];
+                    final post = doc.data() as Map<String, dynamic>;
+                    return _buildPostCard(post, doc.id);
+                  },
+                );
+              },
+            ),
+          ),
+          
+          // New post button
+          Container(
+            padding: EdgeInsets.all(16),
+            child: SizedBox(
               width: double.infinity,
-              color: Colors.white,
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFB91C1C),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'HOMEPAGE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              child: ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => NewPostModal(),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFB91C1C),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'All Posts',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Keep up with what\'s happening in our vibrant community.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.edit, size: 18),
+                    SizedBox(width: 8),
+                    Text('NEW POST', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ),
-            
-            // Content area
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Post card 1
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // User info
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => SocialProfileModal(),
-                                  );
-                                },
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey[300],
-                                  child: Icon(Icons.person, color: Colors.grey[600]),
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => SocialProfileModal(),
-                                    );
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Full Name',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Text',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => EditPostModal(),
-                                  );
-                                },
-                                child: Icon(Icons.more_horiz, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Post content placeholder
-                          Container(
-                            width: double.infinity,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.image_outlined,
-                                    size: 40,
-                                    color: Colors.grey[400],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Icon(
-                                    Icons.close,
-                                    size: 16,
-                                    color: Colors.grey[400],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Action buttons
-                          Row(
-                            children: [
-                              Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text('Count', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              SizedBox(width: 16),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => CommentsModal(),
-                                  );
-                                },
-                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                              ),
-                              SizedBox(width: 4),
-                              Text('Count', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              Spacer(),
-                              Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 16),
-                  
-                  // Post card 2
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // User info
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => SocialProfileModal(),
-                                  );
-                                },
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey[300],
-                                  child: Icon(Icons.person, color: Colors.grey[600]),
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => SocialProfileModal(),
-                                    );
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Another User',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Security Tip',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => EditPostModal(),
-                                  );
-                                },
-                                child: Icon(Icons.more_horiz, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Post content placeholder
-                          Container(
-                            width: double.infinity,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.security,
-                                    size: 40,
-                                    color: Colors.grey[400],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Security Content',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Action buttons
-                          Row(
-                            children: [
-                              Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text('15', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              SizedBox(width: 16),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => CommentsModal(),
-                                  );
-                                },
-                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                              ),
-                              SizedBox(width: 4),
-                              Text('3', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              Spacer(),
-                              Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 16),
-                  
-                  // Post card 3
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // User info
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => SocialProfileModal(),
-                                  );
-                                },
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey[300],
-                                  child: Icon(Icons.person, color: Colors.grey[600]),
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => SocialProfileModal(),
-                                    );
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Gen Secure',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Official Account',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => EditPostModal(),
-                                  );
-                                },
-                                child: Icon(Icons.more_horiz, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Post content placeholder
-                          Container(
-                            width: double.infinity,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.shield,
-                                    size: 40,
-                                    color: Color(0xFFB91C1C),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Welcome to GenSecure!',
-                                    style: TextStyle(
-                                      color: Color(0xFFB91C1C),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Action buttons
-                          Row(
-                            children: [
-                              Icon(Icons.favorite, size: 20, color: Color(0xFFB91C1C)),
-                              SizedBox(width: 4),
-                              Text('42', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              SizedBox(width: 16),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => CommentsModal(),
-                                  );
-                                },
-                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                              ),
-                              SizedBox(width: 4),
-                              Text('8', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              Spacer(),
-                              Icon(Icons.bookmark, size: 20, color: Color(0xFFB91C1C)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 24),
-                  
-                  // New post button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => NewPostModal(),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFB91C1C),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.edit, size: 18),
-                          SizedBox(width: 8),
-                          Text('NEW POST', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 20), // Bottom padding
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
       
-      // Bottom navigation
-      bottomNavigationBar: AppBottomNavigation(currentPage: 'home'),
+      // Floating action button for new posts
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => NewPostModal(),
+          );
+        },
+        backgroundColor: Color(0xFFB91C1C),
+        child: Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }

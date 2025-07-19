@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:typed_data';
 
 class FirebaseService {
   // Firebase instances
@@ -36,6 +37,11 @@ class FirebaseService {
       print('Error signing up: $e');
       return null;
     }
+  }
+
+  // Get current user
+  static User? getCurrentUser() {
+    return _auth.currentUser;
   }
 
   // Sign in with email and password
@@ -181,7 +187,8 @@ class FirebaseService {
       
       if (!postDoc.exists) return;
 
-      List<String> likes = List<String>.from(postDoc.data() as Map<String, dynamic>?['likes'] ?? []);
+      Map<String, dynamic> postData = postDoc.data() as Map<String, dynamic>? ?? {};
+      List<String> likes = List<String>.from(postData['likes'] ?? []);
       
       if (likes.contains(user.uid)) {
         // Unlike
@@ -247,7 +254,8 @@ class FirebaseService {
       String fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}';
       Reference ref = _storage.ref().child('$folder/$fileName');
       
-      UploadTask uploadTask = ref.putData(await readFileAsBytes(filePath));
+      List<int> fileBytes = await readFileAsBytes(filePath);
+      UploadTask uploadTask = ref.putData(Uint8List.fromList(fileBytes));
       TaskSnapshot snapshot = await uploadTask;
       
       return await snapshot.ref.getDownloadURL();
@@ -274,7 +282,8 @@ class FirebaseService {
       DocumentReference targetRef = _firestore.collection(USERS_COLLECTION).doc(targetUserId);
 
       DocumentSnapshot userDoc = await userRef.get();
-      List<String> following = List<String>.from(userDoc.data() as Map<String, dynamic>?['following'] ?? []);
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>? ?? {};
+      List<String> following = List<String>.from(userData['following'] ?? []);
 
       if (following.contains(targetUserId)) {
         // Unfollow

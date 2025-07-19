@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DeleteAccountModal extends StatelessWidget {
+  const DeleteAccountModal({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(

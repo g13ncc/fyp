@@ -1,12 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditPostModal extends StatefulWidget {
+  final String postId;
+  final String initialContent;
+  final String initialImageUrl;
+
+  const EditPostModal({
+    super.key,
+    required this.postId,
+    required this.initialContent,
+    required this.initialImageUrl,
+  });
+
   @override
   _EditPostModalState createState() => _EditPostModalState();
 }
 
 class _EditPostModalState extends State<EditPostModal> {
-  final TextEditingController _textController = TextEditingController();
+  late TextEditingController _textController;
+  bool _isUpdating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController(text: widget.initialContent);
+  }
+
+  Future<void> _updatePost() async {
+    if (_textController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please add some content')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUpdating = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .update({
+        'content': _textController.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Post updated successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating post: $e')),
+      );
+    } finally {
+      setState(() {
+        _isUpdating = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

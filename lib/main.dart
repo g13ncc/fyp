@@ -43,8 +43,7 @@ class MyApp extends StatelessWidget {
         ).copyWith(
           primary: Color(0xFFB91C1C),
           secondary: Color(0xFFFFFFFF),
-          surface: Color(0xFFFFFFFF),
-          background: Color(0xFFF5F5F5),
+          surface: Color(0xFFF5F5F5),
         ),
         useMaterial3: true,
         fontFamily: kIsWeb ? 'Roboto' : null,
@@ -122,6 +121,8 @@ class MyApp extends StatelessWidget {
 
 // Chatbot Page
 class ChatbotPage extends StatelessWidget {
+  const ChatbotPage({super.key});
+  
   final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/05/20/07/20250520070817-XQE31ND4.json';
 
   @override
@@ -154,7 +155,7 @@ class ChatbotPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: Offset(0, 2),
                 ),

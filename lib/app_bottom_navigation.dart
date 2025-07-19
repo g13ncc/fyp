@@ -8,7 +8,7 @@ import 'my_profile_page.dart';
 class AppBottomNavigation extends StatelessWidget {
   final String currentPage;
 
-  const AppBottomNavigation({Key? key, required this.currentPage}) : super(key: key);
+  const AppBottomNavigation({super.key, required this.currentPage});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class AppBottomNavigation extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: Offset(0, -2),
           ),

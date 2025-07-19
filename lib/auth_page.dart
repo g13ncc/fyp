@@ -3,6 +3,8 @@ import 'firebase_service.dart';
 import 'main.dart';
 
 class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
+
   @override
   _AuthPageState createState() => _AuthPageState();
 }

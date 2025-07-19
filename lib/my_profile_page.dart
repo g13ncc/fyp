@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import 'app_bottom_navigation.dart';
 import 'account_setting_page.dart';
 import 'all_posts.dart';
 
-class MyProfilePage extends StatelessWidget {
+class MyProfilePage extends StatefulWidget {
+  const MyProfilePage({super.key});
+
+  @override
+  _MyProfilePageState createState() => _MyProfilePageState();
+}
+
+class _MyProfilePageState extends State<MyProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +41,7 @@ class MyProfilePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: Offset(0, 2),
                     ),
@@ -138,7 +144,7 @@ class MyProfilePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: Offset(0, 2),
                     ),
@@ -218,8 +224,29 @@ class MyProfilePage extends StatelessWidget {
         ),
       ),
       
-      // Bottom navigation
-      bottomNavigationBar: AppBottomNavigation(currentPage: 'profile'),
+      // Simple bottom navigation placeholder - keeping your UI design
+      bottomNavigationBar: Container(
+        height: 60,
+        color: Colors.white,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => AllPostsPage()),
+                );
+              },
+              icon: Icon(Icons.home, color: Colors.grey[600]),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.person, color: Color(0xFFB91C1C)),
+            ),
+          ],
+        ),
+      ),
     );
   }
   

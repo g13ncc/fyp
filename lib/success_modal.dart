@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class SuccessModal extends StatelessWidget {
+  const SuccessModal({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
