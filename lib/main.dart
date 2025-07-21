@@ -123,7 +123,7 @@ class MyApp extends StatelessWidget {
 class ChatbotPage extends StatelessWidget {
   const ChatbotPage({super.key});
   
-  final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.0/shareable.html?configUrl=https://files.bpcontent.cloud/2025/05/20/07/20250520070817-XQE31ND4.json';
+  final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.1/shareable.html?configUrl=https://files.bpcontent.cloud/2025/07/18/03/20250718032958-GW87XLAX.json';
 
   @override
   Widget build(BuildContext context) {
