@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:html' as html;
+import 'dart:ui_web' as ui;
 
 class ChatbotWidget extends StatefulWidget {
   final String chatbotUrl;
@@ -11,28 +12,36 @@ class ChatbotWidget extends StatefulWidget {
 }
 
 class _ChatbotWidgetState extends State<ChatbotWidget> {
-  late final WebViewController _controller;
-
+  late String viewId;
+  
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
-          onWebResourceError: (WebResourceError error) {},
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.chatbotUrl));
+    viewId = 'chatbot-iframe-${DateTime.now().millisecondsSinceEpoch}';
+    
+    // Create iframe element
+    final iframe = html.IFrameElement()
+      ..src = widget.chatbotUrl
+      ..style.border = 'none'
+      ..style.width = '100%'
+      ..style.height = '100%'
+      ..allow = 'microphone; camera; geolocation; display-capture';
+    
+    // Register the iframe with Flutter Web
+    ui.platformViewRegistry.registerViewFactory(
+      viewId,
+      (int viewId) => iframe,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(controller: _controller);
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      child: HtmlElementView(
+        viewType: viewId,
+      ),
+    );
   }
 }

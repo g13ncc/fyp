@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'new_post_modal.dart';
 import 'firebase_service.dart';
 import 'main.dart';
+import 'app_bottom_navigation.dart';
 
 class AllPostsPage extends StatefulWidget {
   const AllPostsPage({super.key});
@@ -301,6 +302,16 @@ class _AllPostsPageState extends State<AllPostsPage> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: Icon(Icons.chat_bubble_outline, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatbotPage()),
+              );
+            },
+            tooltip: 'Chat with AI',
+          ),
+          IconButton(
             icon: Icon(Icons.logout, color: Colors.black),
             onPressed: () async {
               await FirebaseService.signOut();
@@ -401,6 +412,9 @@ class _AllPostsPageState extends State<AllPostsPage> {
           ),
         ],
       ),
+      
+      // Bottom Navigation Bar
+      bottomNavigationBar: AppBottomNavigation(currentPage: 'home'),
       
       // Floating action button for new posts
       floatingActionButton: FloatingActionButton(

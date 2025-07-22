@@ -120,10 +120,30 @@ class MyApp extends StatelessWidget {
 }
 
 // Chatbot Page
-class ChatbotPage extends StatelessWidget {
+class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});
-  
+
+  @override
+  _ChatbotPageState createState() => _ChatbotPageState();
+}
+
+class _ChatbotPageState extends State<ChatbotPage> {
   final String chatbotUrl = 'https://cdn.botpress.cloud/webchat/v3.1/shareable.html?configUrl=https://files.bpcontent.cloud/2025/07/18/03/20250718032958-GW87XLAX.json';
+  bool isLoading = true;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Simulate loading time for better UX
+    Future.delayed(Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +157,17 @@ class ChatbotPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.refresh_rounded, color: Colors.black),
             onPressed: () {
-              // Refresh functionality handled by the widget
+              setState(() {
+                isLoading = true;
+                errorMessage = null;
+              });
+              Future.delayed(Duration(seconds: 1), () {
+                if (mounted) {
+                  setState(() {
+                    isLoading = false;
+                  });
+                }
+              });
             },
             tooltip: 'Refresh Chat',
           ),
@@ -163,7 +193,77 @@ class ChatbotPage extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: ChatbotWidget(chatbotUrl: chatbotUrl),
+              child: isLoading
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB91C1C)),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading AI Assistant...',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : errorMessage != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 48,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Failed to load chatbot',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                errorMessage!,
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isLoading = true;
+                                    errorMessage = null;
+                                  });
+                                  Future.delayed(Duration(seconds: 1), () {
+                                    if (mounted) {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                    }
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFFB91C1C),
+                                ),
+                                child: Text('Retry', style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ChatbotWidget(chatbotUrl: chatbotUrl),
             ),
           ),
         ),

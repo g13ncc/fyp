@@ -223,30 +223,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
           ),
         ),
       ),
-      
-      // Simple bottom navigation placeholder - keeping your UI design
-      bottomNavigationBar: Container(
-        height: 60,
-        color: Colors.white,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => AllPostsPage()),
-                );
-              },
-              icon: Icon(Icons.home, color: Colors.grey[600]),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.person, color: Color(0xFFB91C1C)),
-            ),
-          ],
-        ),
-      ),
     );
   }
   
