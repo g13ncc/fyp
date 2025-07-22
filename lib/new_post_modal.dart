@@ -191,7 +191,7 @@ class _NewPostModalState extends State<NewPostModal> {
                                 child: Container(
                                   padding: EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.6),
+                                    color: Colors.black.withOpacity(0.6),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Icon(
