@@ -123,34 +123,26 @@ class _CommentsModalState extends State<CommentsModal> {
             
             // Comments list
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    // Comment 1
-                    _buildCommentItem(
-                      'User full name',
-                      'Post Comment text',
-                      isFirst: true,
-                    ),
-                    
-                    SizedBox(height: 12),
-                    
-                    // Comment 2
-                    _buildCommentItem(
-                      'User full name',
-                      'Post Comment text',
-                    ),
-                    
-                    SizedBox(height: 12),
-                    
-                    // Comment 3
-                    _buildCommentItem(
-                      'User full name',
-                      'Post Comment text',
-                    ),
-                  ],
-                ),
+              child: StreamBuilder(
+                stream: FirebaseService.getComments(widget.postId),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                  final comments = snapshot.data!.docs;
+                  if (comments.isEmpty) {
+                    return Center(child: Text('No comments yet.'));
+                  }
+                  return ListView.builder(
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      final data = comments[index].data() as Map<String, dynamic>;
+                      return _buildCommentItem(
+                        data['authorName'] ?? 'Anonymous',
+                        data['comment'] ?? '',
+                        isFirst: index == 0,
+                      );
+                    },
+                  );
+                },
               ),
             ),
             
@@ -167,36 +159,18 @@ class _CommentsModalState extends State<CommentsModal> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Enter Comment',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Text(
-                      'Enter Comment',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
+                  TextField(
+                    controller: _commentController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Comment',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                   SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _isPosting ? null : _addComment,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFB91C1C),
                         foregroundColor: Colors.white,
@@ -205,13 +179,7 @@ class _CommentsModalState extends State<CommentsModal> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                      child: Text(
-                        'POST',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isPosting ? CircularProgressIndicator() : Text('POST', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

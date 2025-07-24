@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 import 'new_post_modal.dart';
 import 'firebase_service.dart';
 import 'main.dart';
 import 'app_bottom_navigation.dart';
+import 'comments_modal.dart';
 
 class AllPostsPage extends StatefulWidget {
   const AllPostsPage({super.key});
@@ -33,8 +35,9 @@ class _AllPostsPageState extends State<AllPostsPage> {
 
   Widget _buildPostCard(Map<String, dynamic> post, String postId) {
     final currentUser = FirebaseService.getCurrentUser();
-    final isOwner = currentUser?.uid == post['userId'];
-    
+    final isOwner = currentUser?.uid == post['uid'];
+    // Defensive assignment for 'bookmarkedBy' field
+    post['bookmarkedBy'] = (post['bookmarkedBy'] is List) ? post['bookmarkedBy'] : <String>[];
     return Container(
       margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -67,7 +70,7 @@ class _AllPostsPageState extends State<AllPostsPage> {
                     radius: 20,
                     backgroundColor: Color(0xFFB91C1C),
                     child: Text(
-                      post['userName']?[0]?.toUpperCase() ?? 'U',
+                      post['authorName']?[0]?.toUpperCase() ?? 'U',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -81,16 +84,16 @@ class _AllPostsPageState extends State<AllPostsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post['userName'] ?? 'Anonymous',
+                        post['authorName'] ?? 'Anonymous',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                         ),
                       ),
                       Text(
-                        post['timestamp'] != null
+                        post['createdAt'] != null
                             ? DateFormat('MMM dd, yyyy at hh:mm a').format(
-                                (post['timestamp'] as Timestamp).toDate())
+                                (post['createdAt'] as Timestamp).toDate())
                             : 'Just now',
                         style: TextStyle(
                           color: Colors.grey[600],
@@ -170,13 +173,13 @@ class _AllPostsPageState extends State<AllPostsPage> {
                 ),
               ),
             
-            // Post image
-            if (post['imageUrl'] != null) ...[
+            // Post image (base64)
+            if (post['imageBase64'] != null && post['imageBase64'].toString().isNotEmpty) ...[
               SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  post['imageUrl'],
+                child: Image.memory(
+                  base64Decode(post['imageBase64']),
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,
@@ -245,9 +248,9 @@ class _AllPostsPageState extends State<AllPostsPage> {
                 // Comment button
                 GestureDetector(
                   onTap: () {
-                    // Comments functionality would go here
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Comments feature coming soon!')),
+                    showDialog(
+                      context: context,
+                      builder: (context) => CommentsModal(postId: postId),
                     );
                   },
                   child: Row(
@@ -275,7 +278,38 @@ class _AllPostsPageState extends State<AllPostsPage> {
                 SizedBox(width: 20),
                 
                 // Bookmark button
-                Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance.collection('posts').doc(postId).snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]);
+                    }
+                    final postData = snapshot.data!.data() as Map<String, dynamic>?;
+                    final bookmarkedBy = (postData?['bookmarkedBy'] as List<dynamic>?) ?? [];
+                    final isBookmarked = currentUser != null && bookmarkedBy.contains(currentUser.uid);
+                    return GestureDetector(
+                      onTap: () {
+                        if (currentUser != null) {
+                          final postRef = FirebaseFirestore.instance.collection('posts').doc(postId);
+                          if (isBookmarked) {
+                            postRef.update({
+                              'bookmarkedBy': FieldValue.arrayRemove([currentUser.uid]),
+                            });
+                          } else {
+                            postRef.update({
+                              'bookmarkedBy': FieldValue.arrayUnion([currentUser.uid]),
+                            });
+                          }
+                        }
+                      },
+                      child: Icon(
+                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        size: 20,
+                        color: isBookmarked ? Color(0xFFB91C1C) : Colors.grey[600],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ],

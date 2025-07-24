@@ -4,6 +4,57 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:typed_data';
 
 class FirebaseService {
+  // Create a new post with base64 image
+  static Future<String?> createPostBase64({
+    required String content,
+    String? imageBase64,
+    List<String>? tags,
+  }) async {
+    try {
+      User? user = currentUser;
+      if (user == null) return null;
+
+      DocumentReference postRef = await _firestore.collection(POSTS_COLLECTION).add({
+        'uid': user.uid,
+        'authorName': user.displayName ?? 'Anonymous',
+        'authorPhotoURL': user.photoURL ?? '',
+        'content': content,
+        'imageBase64': imageBase64 ?? '',
+        'tags': tags ?? [],
+        'likes': [],
+        'bookmarkedBy': [],
+        'likesCount': 0,
+        'commentsCount': 0,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      await _firestore.collection(USERS_COLLECTION).doc(user.uid).update({
+        'postsCount': FieldValue.increment(1),
+      });
+
+      return postRef.id;
+    } catch (e) {
+      print('Error creating post (base64): $e');
+      return null;
+    }
+  }
+  // Upload image to Firebase Storage (Web)
+  static Future<String?> uploadImageWeb(Uint8List bytes, String folder) async {
+    try {
+      User? user = currentUser;
+      if (user == null) return null;
+
+      String fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}';
+      Reference ref = _storage.ref().child('$folder/$fileName');
+      UploadTask uploadTask = ref.putData(bytes);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      print('Error uploading image (web): $e');
+      return null;
+    }
+  }
   // Firebase instances
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;

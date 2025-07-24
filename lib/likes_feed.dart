@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'firebase_service.dart';
 import 'app_bottom_navigation.dart';
 import 'new_post_modal.dart';
 
@@ -7,6 +11,7 @@ class LikesFeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseService.getCurrentUser();
     return Scaffold(
       backgroundColor: Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -23,201 +28,146 @@ class LikesFeedPage extends StatelessWidget {
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header section
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFB91C1C),
-                      borderRadius: BorderRadius.circular(4),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseService.getLikedPosts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: \\${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('No liked posts yet.'));
+          }
+          return ListView.builder(
+            padding: EdgeInsets.all(16),
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              final doc = snapshot.data!.docs[index];
+              final post = doc.data() as Map<String, dynamic>;
+              // Ensure 'likes' and 'bookmarkedBy' fields are always lists
+              if (post['likes'] == null || post['likes'] is! List) {
+                post['likes'] = <String>[];
+              }
+              if (post['bookmarkedBy'] == null || post['bookmarkedBy'] is! List) {
+                post['bookmarkedBy'] = <String>[];
+              }
+              return Container(
+                margin: EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: Offset(0, 2),
                     ),
-                    child: Text(
-                      'HOMEPAGE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Color(0xFFB91C1C),
+                            child: Text(
+                              post['authorName']?[0]?.toUpperCase() ?? 'U',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  post['authorName'] ?? 'Anonymous',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                Text(
+                                  post['createdAt'] != null
+                                      ? DateFormat('MMM dd, yyyy at hh:mm a').format((post['createdAt'] as Timestamp).toDate())
+                                      : 'Just now',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    'Likes',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Like posts from other users to see them here.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Content area
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Post card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
+                      SizedBox(height: 12),
+                      if (post['content'] != null && post['content'].isNotEmpty)
+                        Text(
+                          post['content'],
+                          style: TextStyle(fontSize: 15, height: 1.4),
+                        ),
+                      if (post['imageBase64'] != null && post['imageBase64'].toString().isNotEmpty) ...[
+                        SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.memory(
+                            base64Decode(post['imageBase64']),
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      SizedBox(height: 16),
+                      Row(
                         children: [
-                          // User info
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(Icons.person, color: Colors.grey[600]),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Full Name',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Text',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.more_horiz, color: Colors.grey[600]),
-                            ],
+                          Icon(Icons.favorite, size: 20, color: Colors.red),
+                          SizedBox(width: 4),
+                          Text(
+                            '${post['likes'] != null ? (post['likes'] as List).length : 0}',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
                           ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Post content placeholder
-                          Container(
-                            width: double.infinity,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.image_outlined,
-                                    size: 40,
-                                    color: Colors.grey[400],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Icon(
-                                    Icons.close,
-                                    size: 16,
-                                    color: Colors.grey[400],
-                                  ),
-                                ],
-                              ),
-                            ),
+                          SizedBox(width: 20),
+                          Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                          SizedBox(width: 4),
+                          Text(
+                            '${post['commentsCount'] ?? 0}',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
                           ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Action buttons
-                          Row(
-                            children: [
-                              Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text('Count Likes', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text('Count Comments', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              Spacer(),
-                              Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
-                            ],
-                          ),
+                          SizedBox(width: 20),
+                          Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                  
-                  SizedBox(height: 24),
-                  
-                  // New post button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => NewPostModal(),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFB91C1C),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.edit, size: 18),
-                          SizedBox(width: 8),
-                          Text('NEW POST', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 20), // Bottom padding
-                ],
-              ),
-            ),
-          ],
-        ),
+                ),
+              );
+            },
+          );
+        },
       ),
-      
-      // Bottom navigation
       bottomNavigationBar: AppBottomNavigation(currentPage: 'likes'),
     );
   }

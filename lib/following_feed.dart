@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'app_bottom_navigation.dart';
 import 'new_post_modal.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'firebase_service.dart';
+import 'dart:convert';
+
 
 class FollowingFeedPage extends StatelessWidget {
   const FollowingFeedPage({super.key});
@@ -23,198 +28,282 @@ class FollowingFeedPage extends StatelessWidget {
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header section
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFB91C1C),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'HOMEPAGE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+      body: Column(
+        children: [
+          // Header section
+          Container(
+            width: double.infinity,
+            color: Colors.white,
+            padding: EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFB91C1C),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'Following',
+                  child: Text(
+                    'HOMEPAGE',
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'See posts from users you are following',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Content area
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Post card
-                  Container(
-                    decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Following',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'See posts from users you are following',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content area
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseService.getFollowingPosts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: \\n${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
+                        SizedBox(height: 16),
+                        Text('No posts from followed users', style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                        SizedBox(height: 8),
+                        Text('Follow users to see their posts here!', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
                       ],
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // User info
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(Icons.person, color: Colors.grey[600]),
+                  );
+                }
+                return ListView.builder(
+                  padding: EdgeInsets.all(20),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = snapshot.data!.docs[index];
+                    final post = doc.data() as Map<String, dynamic>;
+                    return Container(
+                      margin: EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // User info
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    // Profile functionality would go here
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Profile feature coming soon!')),
+                                    );
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: Color(0xFFB91C1C),
+                                    child: Text(
+                                      post['authorName']?[0]?.toUpperCase() ?? 'U',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        post['authorName'] ?? 'Anonymous',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      Text(
+                                        post['createdAt'] != null
+                                            ? DateFormat('MMM dd, yyyy at hh:mm a').format((post['createdAt'] as Timestamp).toDate())
+                                            : 'Just now',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.more_horiz, color: Colors.grey[600]),
+                              ],
+                            ),
+                            SizedBox(height: 12),
+                            // Post content
+                            if (post['content'] != null && post['content'].isNotEmpty)
+                              Text(
+                                post['content'],
+                                style: TextStyle(fontSize: 15, height: 1.4),
                               ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Full Name',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
+                            // Post image (base64)
+                            if (post['imageBase64'] != null && post['imageBase64'].toString().isNotEmpty) ...[
+                              SizedBox(height: 12),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.memory(
+                                  base64Decode(post['imageBase64']),
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                    ),
-                                    Text(
-                                      'Text',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
+                                      child: Center(
+                                        child: Icon(Icons.image_not_supported, color: Colors.grey),
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
                               ),
-                              Icon(Icons.more_horiz, color: Colors.grey[600]),
                             ],
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Post content placeholder
-                          Container(
-                            width: double.infinity,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.image_outlined,
-                                    size: 40,
-                                    color: Colors.grey[400],
+                            SizedBox(height: 16),
+                            // Action buttons
+                            Row(
+                              children: [
+                                // Like button
+                                StreamBuilder<DocumentSnapshot>(
+                                  stream: FirebaseFirestore.instance.collection('posts').doc(doc.id).snapshots(),
+                                  builder: (context, snap) {
+                                    if (!snap.hasData) {
+                                      return Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]);
+                                    }
+                                    final postData = snap.data!.data() as Map<String, dynamic>?;
+                                    final likes = postData?['likes'] as List<dynamic>? ?? [];
+                                    final currentUser = FirebaseService.getCurrentUser();
+                                    final isLiked = currentUser != null && likes.contains(currentUser.uid);
+                                    return GestureDetector(
+                                      onTap: () {
+                                        if (currentUser != null) {
+                                          FirebaseService.toggleLike(doc.id);
+                                        }
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isLiked ? Icons.favorite : Icons.favorite_border,
+                                            size: 20,
+                                            color: isLiked ? Colors.red : Colors.grey[600],
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text('${likes.length}', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                                SizedBox(width: 20),
+                                // Comment button
+                                GestureDetector(
+                                  onTap: () {
+                                    // Show comments modal (implement if needed)
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                                      SizedBox(width: 4),
+                                      StreamBuilder<QuerySnapshot>(
+                                        stream: FirebaseFirestore.instance.collection('posts').doc(doc.id).collection('comments').snapshots(),
+                                        builder: (context, snap) {
+                                          final commentCount = snap.hasData ? snap.data!.docs.length : 0;
+                                          return Text('$commentCount', style: TextStyle(color: Colors.grey[600], fontSize: 12));
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(height: 8),
-                                  Icon(
-                                    Icons.close,
-                                    size: 16,
-                                    color: Colors.grey[400],
-                                  ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(width: 20),
+                                // Bookmark button
+                                Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
+                              ],
                             ),
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          // Action buttons
-                          Row(
-                            children: [
-                              Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text('Count', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text('Count', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              Spacer(),
-                              Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 24),
-                  
-                  // New post button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => NewPostModal(),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFB91C1C),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.edit, size: 18),
-                          SizedBox(width: 8),
-                          Text('NEW POST', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          // New post button
+          Container(
+            padding: EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => NewPostModal(),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFB91C1C),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
                   ),
-                  
-                  SizedBox(height: 20), // Bottom padding
-                ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.edit, size: 18),
+                    SizedBox(width: 8),
+                    Text('NEW POST', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       
       // Bottom navigation

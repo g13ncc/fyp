@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'firebase_service.dart';
 
 class NewPostModal extends StatefulWidget {
@@ -13,19 +15,25 @@ class NewPostModal extends StatefulWidget {
 class _NewPostModalState extends State<NewPostModal> {
   final TextEditingController _textController = TextEditingController();
   File? _selectedImage;
+  Uint8List? _webImageBytes;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
 
   Future<void> _createPost() async {
-    String? image;
-    if (_selectedImage != null) {
-      image = await FirebaseService.uploadImage(_selectedImage!.path, 'posts');
+    String? imageBase64;
+    print('DEBUG: Starting post creation');
+    if (kIsWeb && _webImageBytes != null) {
+      imageBase64 = base64Encode(_webImageBytes!);
+    } else if (_selectedImage != null) {
+      final bytes = await _selectedImage!.readAsBytes();
+      imageBase64 = base64Encode(bytes);
     }
 
     if (_textController.text.trim().isEmpty && _selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please add some content or an image')),
       );
+      print('DEBUG: No content or image');
       return;
     }
 
@@ -33,17 +41,29 @@ class _NewPostModalState extends State<NewPostModal> {
       _isLoading = true;
     });
 
+    bool shouldClose = false;
     try {
-      await FirebaseService.createPost(
+      print('DEBUG: Calling createPost');
+      final postId = await FirebaseService.createPostBase64(
         content: _textController.text.trim(),
-        imageUrl: image,
+        imageBase64: imageBase64,
       );
-      
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Post created successfully!')),
-      );
-    } catch (e) {
+      print('DEBUG: createPost returned: $postId');
+      if (postId != null) {
+        shouldClose = true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Post created successfully!')),
+        );
+      } else {
+        shouldClose = true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: Post not created.')),
+        );
+      }
+    } catch (e, stack) {
+      print('DEBUG: Exception: $e');
+      print('DEBUG: Stack: $stack');
+      shouldClose = true;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error creating post: $e')),
       );
@@ -51,6 +71,10 @@ class _NewPostModalState extends State<NewPostModal> {
       setState(() {
         _isLoading = false;
       });
+      if (shouldClose) {
+        Navigator.of(context).pop();
+      }
+      print('DEBUG: Post creation finished');
     }
   }
 
@@ -58,9 +82,16 @@ class _NewPostModalState extends State<NewPostModal> {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
+        if (kIsWeb) {
+          final bytes = await image.readAsBytes();
+          setState(() {
+            _webImageBytes = bytes;
+          });
+        } else {
+          setState(() {
+            _selectedImage = File(image.path);
+          });
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -160,7 +191,7 @@ class _NewPostModalState extends State<NewPostModal> {
                     SizedBox(height: 16),
                     
                     // Image preview
-                    if (_selectedImage != null) ...[
+                    if ((kIsWeb && _webImageBytes != null) || (!kIsWeb && _selectedImage != null)) ...[
                       Container(
                         width: double.infinity,
                         height: 200,
@@ -172,12 +203,19 @@ class _NewPostModalState extends State<NewPostModal> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                _selectedImage!,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
+                              child: kIsWeb
+                                  ? Image.memory(
+                                      _webImageBytes!,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.file(
+                                      _selectedImage!,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                             Positioned(
                               top: 8,
@@ -185,7 +223,11 @@ class _NewPostModalState extends State<NewPostModal> {
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    _selectedImage = null;
+                                    if (kIsWeb) {
+                                      _webImageBytes = null;
+                                    } else {
+                                      _selectedImage = null;
+                                    }
                                   });
                                 },
                                 child: Container(
