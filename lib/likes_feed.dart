@@ -8,8 +8,19 @@ import 'new_post_modal.dart';
 import 'comments_modal.dart';
 
 
+
 class LikesFeedPage extends StatelessWidget {
   LikesFeedPage({Key? key}) : super(key: key);
+
+  // Helper to fetch user profile image (base64) by uid
+  Future<String?> _getUserProfileImage(String uid) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final data = doc.data();
+    final img = (data != null && data['profileImageBase64'] != null && data['profileImageBase64'].toString().isNotEmpty)
+        ? data['profileImageBase64'] as String
+        : null;
+    return img;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +48,7 @@ class LikesFeedPage extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: \\${snapshot.error}'));
+            return Center(child: Text('Error: ${snapshot.error}'));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(child: Text('No liked posts yet.'));
@@ -55,161 +66,173 @@ class LikesFeedPage extends StatelessWidget {
               if (post['bookmarkedBy'] == null || post['bookmarkedBy'] is! List) {
                 post['bookmarkedBy'] = <String>[];
               }
-              return Container(
-                margin: EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Color(0xFFB91C1C),
-                            child: Text(
-                              post['authorName']?[0]?.toUpperCase() ?? 'U',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post['authorName'] ?? 'Anonymous',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                Text(
-                                  post['createdAt'] != null
-                                      ? DateFormat('MMM dd, yyyy • hh:mm a').format((post['createdAt'] as Timestamp).toDate())
-                                      : 'Just now',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      if (post['content'] != null && post['content'].isNotEmpty)
-                        Text(
-                          post['content'],
-                          style: TextStyle(fontSize: 15, height: 1.4),
-                        ),
-                      if (post['imageBase64'] != null && post['imageBase64'].toString().isNotEmpty) ...[
-                        SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            base64Decode(post['imageBase64']),
-                            width: double.infinity,
-                            height: 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Icon(Icons.image_not_supported, color: Colors.grey),
-                                ),
-                              );
-                            },
-                          ),
+              return FutureBuilder<String?>(
+                future: _getUserProfileImage(post['uid'] ?? ''),
+                builder: (context, snapshot) {
+                  final profileImageBase64 = snapshot.data;
+                  return Container(
+                    margin: EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 2),
                         ),
                       ],
-                      SizedBox(height: 16),
-                      Row(
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              await FirebaseService.toggleLike(doc.id);
-                            },
-                            child: Icon(
-                              post['likes'].contains(currentUser!.uid)
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              size: 20,
-                              color: post['likes'].contains(currentUser!.uid)
-                                  ? Colors.red
-                                  : Colors.grey[600],
+                          Row(
+                            children: [
+                              (profileImageBase64 != null && profileImageBase64.isNotEmpty)
+                                  ? CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[200],
+                                      backgroundImage: MemoryImage(base64Decode(profileImageBase64)),
+                                    )
+                                  : CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Color(0xFFB91C1C),
+                                      child: Text(
+                                        post['authorName']?[0]?.toUpperCase() ?? 'U',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      post['authorName'] ?? 'Anonymous',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    Text(
+                                      post['createdAt'] != null
+                                          ? DateFormat('MMM dd, yyyy • hh:mm a').format((post['createdAt'] as Timestamp).toDate())
+                                          : 'Just now',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+                          if (post['content'] != null && post['content'].isNotEmpty)
+                            Text(
+                              post['content'],
+                              style: TextStyle(fontSize: 15, height: 1.4),
                             ),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '${post['likes'] != null ? (post['likes'] as List).length : 0}',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                          ),
-                          SizedBox(width: 20),
-                          GestureDetector(
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (context) => CommentsModal(postId: doc.id),
-                              );
-                            },
-                            child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '${post['commentsCount'] ?? 0}',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                          ),
-                          SizedBox(width: 20),
-                          GestureDetector(
-                            onTap: () async {
-                              final postRef = FirebaseFirestore.instance.collection('posts').doc(doc.id);
-                              if (post['bookmarkedBy'].contains(currentUser!.uid)) {
-                                await postRef.update({
-                                  'bookmarkedBy': FieldValue.arrayRemove([currentUser!.uid]),
-                                });
-                              } else {
-                                await postRef.update({
-                                  'bookmarkedBy': FieldValue.arrayUnion([currentUser!.uid]),
-                                });
-                              }
-                            },
-                            child: Icon(
-                              post['bookmarkedBy'].contains(currentUser!.uid)
-                                  ? Icons.bookmark
-                                  : Icons.bookmark_border,
-                              size: 20,
-                              color: post['bookmarkedBy'].contains(currentUser!.uid)
-                                  ? Color(0xFFB91C1C)
-                                  : Colors.grey[600],
+                          if (post['imageBase64'] != null && post['imageBase64'].toString().isNotEmpty) ...[
+                            SizedBox(height: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.memory(
+                                base64Decode(post['imageBase64']),
+                                width: double.infinity,
+                                height: 200,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: Icon(Icons.image_not_supported, color: Colors.grey),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
+                          ],
+                          SizedBox(height: 16),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  await FirebaseService.toggleLike(doc.id);
+                                },
+                                child: Icon(
+                                  post['likes'].contains(currentUser!.uid)
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  size: 20,
+                                  color: post['likes'].contains(currentUser!.uid)
+                                      ? Colors.red
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                '${post['likes'] != null ? (post['likes'] as List).length : 0}',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              ),
+                              SizedBox(width: 20),
+                              GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => CommentsModal(postId: doc.id),
+                                  );
+                                },
+                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                '${post['commentsCount'] ?? 0}',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              ),
+                              SizedBox(width: 20),
+                              GestureDetector(
+                                onTap: () async {
+                                  final postRef = FirebaseFirestore.instance.collection('posts').doc(doc.id);
+                                  if (post['bookmarkedBy'].contains(currentUser!.uid)) {
+                                    await postRef.update({
+                                      'bookmarkedBy': FieldValue.arrayRemove([currentUser!.uid]),
+                                    });
+                                  } else {
+                                    await postRef.update({
+                                      'bookmarkedBy': FieldValue.arrayUnion([currentUser!.uid]),
+                                    });
+                                  }
+                                },
+                                child: Icon(
+                                  post['bookmarkedBy'].contains(currentUser!.uid)
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_border,
+                                  size: 20,
+                                  color: post['bookmarkedBy'].contains(currentUser!.uid)
+                                      ? Color(0xFFB91C1C)
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           );
@@ -218,4 +241,5 @@ class LikesFeedPage extends StatelessWidget {
       bottomNavigationBar: AppBottomNavigation(currentPage: 'likes'),
     );
   }
+// ...existing code up to end of build method...
 }
