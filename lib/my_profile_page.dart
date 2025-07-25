@@ -14,6 +14,28 @@ class MyProfilePage extends StatefulWidget {
 }
 
 class _MyProfilePageState extends State<MyProfilePage> {
+  int _postsCount = 0;
+  int _likesCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCounts();
+  }
+
+  Future<void> _fetchCounts() async {
+    final user = FirebaseService.getCurrentUser();
+    if (user == null) return;
+    // Count posts
+    final postsSnap = await FirebaseFirestore.instance.collection('posts').where('uid', isEqualTo: user.uid).get();
+    // Count likes
+    final likesSnap = await FirebaseFirestore.instance.collection('posts').where('likes', arrayContains: user.uid).get();
+    setState(() {
+      _postsCount = postsSnap.docs.length;
+      _likesCount = likesSnap.docs.length;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseService.getCurrentUser();
@@ -38,7 +60,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
             children: [
               // Profile Card (real user info)
               StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance.collection('users').doc(currentUser?.uid).snapshots(),
+                stream: FirebaseFirestore.instance.collection('users').doc(currentUser.uid).snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return CircularProgressIndicator();
@@ -69,19 +91,28 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               color: Colors.grey[200],
                               shape: BoxShape.circle,
                             ),
-                            child: userData['photoURL'] != null && userData['photoURL'] != ''
-                                ? ClipOval(child: Image.network(userData['photoURL'], width: 80, height: 80, fit: BoxFit.cover))
+                            child: userData['profileImageBase64'] != null && userData['profileImageBase64'] != ''
+                                ? ClipOval(
+                                    child: Image.memory(
+                                      base64Decode(userData['profileImageBase64']),
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Icon(Icons.person, size: 40, color: Colors.grey[400]),
+                                    ),
+                                  )
                                 : Icon(Icons.person, size: 40, color: Colors.grey[400]),
                           ),
                           SizedBox(height: 16),
                           // Full Name
                           Text(userData['displayName'] ?? 'Full Name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black)),
                           SizedBox(height: 8),
-                          // Username
-                          Text('@${userData['uid'] ?? 'Username'}', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                          // Bio
+                          if ((userData['bio'] ?? '').toString().isNotEmpty)
+                            Text(userData['bio'], style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                           SizedBox(height: 4),
                           // Activity
-                          Text('Posts: ${userData['postsCount'] ?? 0} | Likes: ${userData['likesCount'] ?? 0}', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                          Text('Posts: $_postsCount | Likes: $_likesCount', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                           SizedBox(height: 20),
                           // Edit My Profile Button
                           SizedBox(

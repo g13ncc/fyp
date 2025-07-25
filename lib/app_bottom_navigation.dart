@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'all_posts.dart';
-import 'following_feed.dart';
+// import 'following_feed.dart';
 import 'likes_feed.dart';
 import 'bookmarks_feed.dart';
 import 'my_profile_page.dart';
@@ -39,16 +39,7 @@ class AppBottomNavigation extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => AllPostsPage()),
                 ),
               ),
-              _buildNavItem(
-                context,
-                Icons.people_outline,
-                'Following',
-                currentPage == 'following',
-                () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => FollowingFeedPage()),
-                ),
-              ),
+
               _buildNavItem(
                 context,
                 Icons.favorite_border,

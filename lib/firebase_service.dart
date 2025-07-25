@@ -4,6 +4,66 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:typed_data';
 
 class FirebaseService {
+  // Delete user account and Firestore user document
+  static Future<void> deleteCurrentUserAccount() async {
+    try {
+      User? user = currentUser;
+      if (user == null) return;
+
+
+
+      // Delete user document from Firestore
+      await _firestore.collection(USERS_COLLECTION).doc(user.uid).delete();
+
+      // Delete user from Firebase Auth
+      await user.delete();
+    } catch (e) {
+      print('Error deleting user account: $e');
+      rethrow;
+    }
+  }
+  // Update an existing post
+  static Future<void> updatePost({
+    required String postId,
+    required String content,
+    String? imageBase64,
+  }) async {
+    await FirebaseFirestore.instance.collection(POSTS_COLLECTION).doc(postId).update({
+      'content': content,
+      'imageBase64': imageBase64 ?? '',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+  // Update user profile (username, email, bio, profile image as base64)
+  static Future<void> updateUserProfile({
+    required String uid,
+    String? displayName,
+    String? email,
+    String? username,
+    String? phone,
+    String? bio,
+    String? profileImageBase64,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
+      if (displayName != null) data['displayName'] = displayName;
+      if (email != null) data['email'] = email;
+      if (username != null) data['username'] = username;
+      if (phone != null) data['phone'] = phone;
+      if (bio != null) data['bio'] = bio;
+      if (profileImageBase64 != null) data['profileImageBase64'] = profileImageBase64;
+      data['updatedAt'] = FieldValue.serverTimestamp();
+      await _firestore.collection(USERS_COLLECTION).doc(uid).update(data);
+      // Optionally update Firebase Auth profile
+      final user = _auth.currentUser;
+      if (user != null) {
+        if (displayName != null && displayName.isNotEmpty) await user.updateDisplayName(displayName);
+        if (email != null && email.isNotEmpty && email != user.email) await user.updateEmail(email);
+      }
+    } catch (e) {
+      print('Error updating user profile: $e');
+    }
+  }
   // Create a new post with base64 image
   static Future<String?> createPostBase64({
     required String content,
@@ -125,10 +185,12 @@ class FirebaseService {
         'uid': user.uid,
         'email': user.email,
         'displayName': user.displayName ?? 'Anonymous',
-        'photoURL': user.photoURL ?? '',
+        'username': '',
+        'bio': '',
+        'phone': '',
+        'profileImageBase64': '',
         'createdAt': FieldValue.serverTimestamp(),
-        'followers': [],
-        'following': [],
+
         'postsCount': 0,
         'likesCount': 0,
       });
@@ -191,29 +253,7 @@ class FirebaseService {
         .snapshots();
   }
 
-  // Get posts from followed users (for Following Feed)
-  static Stream<QuerySnapshot> getFollowingPosts() {
-    User? user = currentUser;
-    if (user == null) return Stream.empty();
 
-    return _firestore
-        .collection(USERS_COLLECTION)
-        .doc(user.uid)
-        .snapshots()
-        .asyncMap((userDoc) async {
-      List<String> following = List<String>.from(userDoc.data()?['following'] ?? []);
-      
-      if (following.isEmpty) {
-        return _firestore.collection(POSTS_COLLECTION).where('uid', isEqualTo: 'none').get();
-      }
-
-      return _firestore
-          .collection(POSTS_COLLECTION)
-          .where('uid', whereIn: following)
-          .orderBy('createdAt', descending: true)
-          .get();
-    });
-  }
 
   // Get user's liked posts
   static Stream<QuerySnapshot> getLikedPosts() {
@@ -323,38 +363,5 @@ class FirebaseService {
     return [];
   }
 
-  // Follow/Unfollow user
-  static Future<void> toggleFollow(String targetUserId) async {
-    try {
-      User? user = currentUser;
-      if (user == null || user.uid == targetUserId) return;
 
-      DocumentReference userRef = _firestore.collection(USERS_COLLECTION).doc(user.uid);
-      DocumentReference targetRef = _firestore.collection(USERS_COLLECTION).doc(targetUserId);
-
-      DocumentSnapshot userDoc = await userRef.get();
-      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>? ?? {};
-      List<String> following = List<String>.from(userData['following'] ?? []);
-
-      if (following.contains(targetUserId)) {
-        // Unfollow
-        await userRef.update({
-          'following': FieldValue.arrayRemove([targetUserId]),
-        });
-        await targetRef.update({
-          'followers': FieldValue.arrayRemove([user.uid]),
-        });
-      } else {
-        // Follow
-        await userRef.update({
-          'following': FieldValue.arrayUnion([targetUserId]),
-        });
-        await targetRef.update({
-          'followers': FieldValue.arrayUnion([user.uid]),
-        });
-      }
-    } catch (e) {
-      print('Error toggling follow: $e');
-    }
-  }
 }

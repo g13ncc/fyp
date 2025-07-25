@@ -13,7 +13,7 @@ class _AuthPageState extends State<AuthPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _displayNameController = TextEditingController();
   
   bool _isLogin = true;
   bool _isLoading = false;
@@ -31,13 +31,12 @@ class _AuthPageState extends State<AuthPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 60),
-                
                 // App Logo/Title
                 Container(
                   height: 100,
                   width: 100,
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Color(0xFFB91C1C),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
@@ -46,20 +45,16 @@ class _AuthPageState extends State<AuthPage> {
                     color: Colors.white,
                   ),
                 ),
-                
                 SizedBox(height: 20),
-                
                 Text(
-                  _isLogin ? 'Welcome Back!' : 'Join Us!',
+                  _isLogin ? 'Welcome Back to Gensecure!' : 'Join Us @ Gensecure!',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                
                 SizedBox(height: 8),
-                
                 Text(
                   _isLogin 
                     ? 'Sign in to continue' 
@@ -69,15 +64,14 @@ class _AuthPageState extends State<AuthPage> {
                     color: Colors.grey[600],
                   ),
                 ),
-                
                 SizedBox(height: 40),
                 
-                // Name field (only for signup)
+                // Display Name field (only for signup)
                 if (!_isLogin) ...[
                   TextFormField(
-                    controller: _nameController,
+                    controller: _displayNameController,
                     decoration: InputDecoration(
-                      labelText: 'Full Name',
+                      labelText: 'Display Name',
                       prefixIcon: Icon(Icons.person),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -87,7 +81,7 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     validator: (value) {
                       if (!_isLogin && (value == null || value.isEmpty)) {
-                        return 'Please enter your name';
+                        return 'Please enter your display name';
                       }
                       return null;
                     },
@@ -154,7 +148,7 @@ class _AuthPageState extends State<AuthPage> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleAuth,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Color(0xFFB91C1C),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -188,7 +182,7 @@ class _AuthPageState extends State<AuthPage> {
                       onTap: () {
                         setState(() {
                           _isLogin = !_isLogin;
-                          _nameController.clear();
+                          _displayNameController.clear();
                           _emailController.clear();
                           _passwordController.clear();
                         });
@@ -196,7 +190,7 @@ class _AuthPageState extends State<AuthPage> {
                       child: Text(
                         _isLogin ? 'Sign Up' : 'Sign In',
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: Color(0xFFB91C1C),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -238,7 +232,7 @@ class _AuthPageState extends State<AuthPage> {
         final result = await FirebaseService.signUpWithEmail(
           _emailController.text.trim(),
           _passwordController.text,
-          _nameController.text.trim(),
+          _displayNameController.text.trim(),
         );
         
         if (result != null) {
@@ -271,7 +265,7 @@ class _AuthPageState extends State<AuthPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _nameController.dispose();
+    _displayNameController.dispose();
     super.dispose();
   }
 }

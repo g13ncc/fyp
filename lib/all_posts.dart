@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'comments_modal.dart';
 import 'dart:convert';
 import 'new_post_modal.dart';
 import 'firebase_service.dart';
@@ -16,13 +17,46 @@ class AllPostsPage extends StatefulWidget {
 }
 
 class _AllPostsPageState extends State<AllPostsPage> {
-  Future<void> _deletePost(String postId) async {
+  // Helper to cache user profile images
+  final Map<String, String?> _userProfileImageCache = {};
+
+  Future<String?> _getUserProfileImage(String uid) async {
+    if (_userProfileImageCache.containsKey(uid)) {
+      return _userProfileImageCache[uid];
+    }
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final data = doc.data();
+    final img = (data != null && data['profileImageBase64'] != null && data['profileImageBase64'].toString().isNotEmpty)
+        ? data['profileImageBase64'] as String
+        : null;
+    _userProfileImageCache[uid] = img;
+    return img;
+  }
+  Future<void> _editPost(String postId, Map<String, dynamic> post) async {
+    // Show NewPostModal in edit mode
+    await showDialog(
+      context: context,
+      builder: (context) => NewPostModal(
+        postId: postId,
+        initialContent: post['content'] ?? '',
+        initialImageBase64: post['imageBase64'] ?? '',
+      ),
+    );
+  }
+
+  Future<void> _deletePostAndComments(String postId) async {
     try {
-      await FirebaseFirestore.instance
+      // Delete all comments subcollection
+      final comments = await FirebaseFirestore.instance
           .collection('posts')
           .doc(postId)
-          .delete();
-      
+          .collection('comments')
+          .get();
+      for (final doc in comments.docs) {
+        await doc.reference.delete();
+      }
+      // Delete the post
+      await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Post deleted successfully')),
       );
@@ -32,52 +66,59 @@ class _AllPostsPageState extends State<AllPostsPage> {
       );
     }
   }
+  // Removed unused _deletePost method (use _deletePostAndComments only)
 
-  Widget _buildPostCard(Map<String, dynamic> post, String postId) {
+  Widget _buildPostCard(Map<String, dynamic> post, String postId, String? profileImageBase64) {
     final currentUser = FirebaseService.getCurrentUser();
     final isOwner = currentUser?.uid == post['uid'];
     // Defensive assignment for 'bookmarkedBy' field
     post['bookmarkedBy'] = (post['bookmarkedBy'] is List) ? post['bookmarkedBy'] : <String>[];
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+          margin: EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User info
-            Row(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    // Profile functionality would go here
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Profile feature coming soon!')),
-                    );
-                  },
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Color(0xFFB91C1C),
-                    child: Text(
-                      post['authorName']?[0]?.toUpperCase() ?? 'U',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                // User info
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        // Profile functionality would go here
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Profile feature coming soon!')),
+                        );
+                      },
+                      child: (profileImageBase64 != null && profileImageBase64.isNotEmpty)
+                          ? CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.grey[200],
+                              backgroundImage: MemoryImage(base64Decode(profileImageBase64)),
+                            )
+                          : CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Color(0xFFB91C1C),
+                              child: Text(
+                                post['authorName']?[0]?.toUpperCase() ?? 'U',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                     ),
-                  ),
-                ),
                 SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -92,7 +133,7 @@ class _AllPostsPageState extends State<AllPostsPage> {
                       ),
                       Text(
                         post['createdAt'] != null
-                            ? DateFormat('MMM dd, yyyy at hh:mm a').format(
+                            ? DateFormat('MMM dd, yyyy • hh:mm a').format(
                                 (post['createdAt'] as Timestamp).toDate())
                             : 'Just now',
                         style: TextStyle(
@@ -107,10 +148,7 @@ class _AllPostsPageState extends State<AllPostsPage> {
                   PopupMenuButton<String>(
                     onSelected: (value) {
                       if (value == 'edit') {
-                        // Edit functionality would go here
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Edit feature coming soon!')),
-                        );
+                        _editPost(postId, post);
                       } else if (value == 'delete') {
                         showDialog(
                           context: context,
@@ -125,7 +163,7 @@ class _AllPostsPageState extends State<AllPostsPage> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  _deletePost(postId);
+                                  _deletePostAndComments(postId);
                                 },
                                 child: Text('Delete', style: TextStyle(color: Colors.red)),
                               ),
@@ -369,7 +407,7 @@ class _AllPostsPageState extends State<AllPostsPage> {
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(child: Text('Error: \\${snapshot.error}'));
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -406,13 +444,17 @@ class _AllPostsPageState extends State<AllPostsPage> {
                   itemBuilder: (context, index) {
                     final doc = snapshot.data!.docs[index];
                     final post = doc.data() as Map<String, dynamic>;
-                    return _buildPostCard(post, doc.id);
+                    return FutureBuilder<String?>(
+                      future: _getUserProfileImage(post['uid'] ?? ''),
+                      builder: (context, snap) {
+                        return _buildPostCard(post, doc.id, snap.data);
+                      },
+                    );
                   },
                 );
               },
             ),
           ),
-          
           // New post button
           Container(
             padding: EdgeInsets.all(16),
@@ -446,21 +488,9 @@ class _AllPostsPageState extends State<AllPostsPage> {
           ),
         ],
       ),
-      
       // Bottom Navigation Bar
       bottomNavigationBar: AppBottomNavigation(currentPage: 'home'),
-      
-      // Floating action button for new posts
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => NewPostModal(),
-          );
-        },
-        backgroundColor: Color(0xFFB91C1C),
-        child: Icon(Icons.add, color: Colors.white),
-      ),
+      // Floating action button removed as requested
     );
   }
 }

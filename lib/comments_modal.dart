@@ -37,18 +37,21 @@ class _CommentsModalState extends State<CommentsModal> {
 
   @override
   Widget build(BuildContext context) {
+    // Consistent modal size for all pages
+    final double modalWidth = MediaQuery.of(context).size.width > 600 ? 500 : MediaQuery.of(context).size.width * 0.9;
+    final double modalHeight = MediaQuery.of(context).size.height > 800 ? 420 : MediaQuery.of(context).size.height * 0.8;
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height * 0.8,
+        width: modalWidth,
+        height: modalHeight,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            // Header
+            // Header (with only one close icon, no title)
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -60,14 +63,6 @@ class _CommentsModalState extends State<CommentsModal> {
               ),
               child: Row(
                 children: [
-                  Text(
-                    'Comments Modal',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
                   Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
@@ -87,37 +82,17 @@ class _CommentsModalState extends State<CommentsModal> {
                 ],
               ),
             ),
-            
             // Comments section
             Container(
               padding: EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text(
-                    'Comments',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Spacer(),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      padding: EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.close,
-                        size: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                ],
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Comments',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
               ),
             ),
             
@@ -192,50 +167,53 @@ class _CommentsModalState extends State<CommentsModal> {
   }
   
   Widget _buildCommentItem(String username, String comment, {bool isFirst = false}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Avatar
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isFirst ? Color(0xFFB91C1C) : Colors.grey[300],
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.person,
-            color: isFirst ? Colors.white : Colors.grey[600],
-            size: 18,
-          ),
-        ),
-        
-        SizedBox(width: 12),
-        
-        // Comment content
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$username - $comment',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black,
-                ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0), // Align with 'Comments' title
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar with padding
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isFirst ? Color(0xFFB91C1C) : Colors.grey[300],
+                shape: BoxShape.circle,
               ),
-              SizedBox(height: 4),
-              Text(
-                'Post Comment text',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+              child: Icon(
+                Icons.person,
+                color: isFirst ? Colors.white : Colors.grey[600],
+                size: 18,
               ),
-            ],
+            ),
           ),
-        ),
-      ],
+          // Comment content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$username :',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '$comment',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
   

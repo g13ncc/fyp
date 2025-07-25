@@ -5,9 +5,11 @@ import 'package:intl/intl.dart';
 import 'firebase_service.dart';
 import 'app_bottom_navigation.dart';
 import 'new_post_modal.dart';
+import 'comments_modal.dart';
+
 
 class LikesFeedPage extends StatelessWidget {
-  const LikesFeedPage({super.key});
+  LikesFeedPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +100,7 @@ class LikesFeedPage extends StatelessWidget {
                                 ),
                                 Text(
                                   post['createdAt'] != null
-                                      ? DateFormat('MMM dd, yyyy at hh:mm a').format((post['createdAt'] as Timestamp).toDate())
+                                      ? DateFormat('MMM dd, yyyy • hh:mm a').format((post['createdAt'] as Timestamp).toDate())
                                       : 'Just now',
                                   style: TextStyle(
                                     color: Colors.grey[600],
@@ -143,21 +145,66 @@ class LikesFeedPage extends StatelessWidget {
                       SizedBox(height: 16),
                       Row(
                         children: [
-                          Icon(Icons.favorite, size: 20, color: Colors.red),
+                          GestureDetector(
+                            onTap: () async {
+                              await FirebaseService.toggleLike(doc.id);
+                            },
+                            child: Icon(
+                              post['likes'].contains(currentUser!.uid)
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              size: 20,
+                              color: post['likes'].contains(currentUser!.uid)
+                                  ? Colors.red
+                                  : Colors.grey[600],
+                            ),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             '${post['likes'] != null ? (post['likes'] as List).length : 0}',
                             style: TextStyle(color: Colors.grey[600], fontSize: 12),
                           ),
                           SizedBox(width: 20),
-                          Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                          GestureDetector(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => CommentsModal(postId: doc.id),
+                              );
+                            },
+                            child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             '${post['commentsCount'] ?? 0}',
                             style: TextStyle(color: Colors.grey[600], fontSize: 12),
                           ),
                           SizedBox(width: 20),
-                          Icon(Icons.bookmark_border, size: 20, color: Colors.grey[600]),
+                          GestureDetector(
+                            onTap: () async {
+                              final postRef = FirebaseFirestore.instance.collection('posts').doc(doc.id);
+                              if (post['bookmarkedBy'].contains(currentUser!.uid)) {
+                                await postRef.update({
+                                  'bookmarkedBy': FieldValue.arrayRemove([currentUser!.uid]),
+                                });
+                              } else {
+                                await postRef.update({
+                                  'bookmarkedBy': FieldValue.arrayUnion([currentUser!.uid]),
+                                });
+                              }
+                            },
+                            child: Icon(
+                              post['bookmarkedBy'].contains(currentUser!.uid)
+                                  ? Icons.bookmark
+                                  : Icons.bookmark_border,
+                              size: 20,
+                              color: post['bookmarkedBy'].contains(currentUser!.uid)
+                                  ? Color(0xFFB91C1C)
+                                  : Colors.grey[600],
+                            ),
+                          ),
                         ],
                       ),
                     ],
