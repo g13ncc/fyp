@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'firebase_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CommentsModal extends StatefulWidget {
   final String postId;
@@ -109,10 +110,13 @@ class _CommentsModalState extends State<CommentsModal> {
                   return ListView.builder(
                     itemCount: comments.length,
                     itemBuilder: (context, index) {
-                      final data = comments[index].data() as Map<String, dynamic>;
+                      final doc = comments[index];
+                      final data = doc.data() as Map<String, dynamic>;
                       return _buildCommentItem(
                         data['authorName'] ?? 'Anonymous',
                         data['comment'] ?? '',
+                        doc.id,
+                        data['uid'] ?? '',
                         isFirst: index == 0,
                       );
                     },
@@ -166,13 +170,14 @@ class _CommentsModalState extends State<CommentsModal> {
     );
   }
   
-  Widget _buildCommentItem(String username, String comment, {bool isFirst = false}) {
+  Widget _buildCommentItem(String username, String comment, String commentId, String commentUid, {bool isFirst = false}) {
+    final currentUser = FirebaseService.getCurrentUser();
+    final isOwner = currentUser != null && currentUser.uid == commentUid;
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0), // Align with 'Comments' title
+      padding: const EdgeInsets.only(left: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar with padding
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Container(
@@ -189,25 +194,74 @@ class _CommentsModalState extends State<CommentsModal> {
               ),
             ),
           ),
-          // Comment content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$username :',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      '$username :',
+                      style: TextStyle(fontSize: 14, color: Colors.black),
+                    ),
+                    if (isOwner) ...[
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () async {
+                          // Edit comment dialog
+                          final controller = TextEditingController(text: comment);
+                          final result = await showDialog<String>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Edit Comment'),
+                              content: TextField(
+                                controller: controller,
+                                decoration: InputDecoration(hintText: 'Edit your comment'),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, controller.text.trim()),
+                                  child: Text('Save'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (result != null && result.isNotEmpty && result != comment) {
+                            await FirebaseFirestore.instance
+                                .collection('posts')
+                                .doc(widget.postId)
+                                .collection('comments')
+                                .doc(commentId)
+                                .update({'comment': result});
+                            setState(() {});
+                          }
+                        },
+                        child: Icon(Icons.edit, size: 16, color: Colors.blue),
+                      ),
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () async {
+                          await FirebaseFirestore.instance
+                              .collection('posts')
+                              .doc(widget.postId)
+                              .collection('comments')
+                              .doc(commentId)
+                              .delete();
+                          setState(() {});
+                        },
+                        child: Icon(Icons.delete, size: 16, color: Colors.red),
+                      ),
+                    ],
+                  ],
                 ),
                 SizedBox(height: 4),
                 Text(
                   '$comment',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),

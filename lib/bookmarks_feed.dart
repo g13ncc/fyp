@@ -69,6 +69,7 @@ class BookmarksFeedPage extends StatelessWidget {
               if (post['bookmarkedBy'] == null || post['bookmarkedBy'] is! List) {
                 post['bookmarkedBy'] = <String>[];
               }
+              final currentUser = FirebaseService.getCurrentUser();
               return FutureBuilder<String?>(
                 future: _getUserProfileImage(post['uid'] ?? ''),
                 builder: (context, snapshot) {
@@ -168,6 +169,71 @@ class BookmarksFeedPage extends StatelessWidget {
                               ),
                             ),
                           ],
+                          SizedBox(height: 16),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  await FirebaseService.toggleLike(doc.id);
+                                },
+                                child: Icon(
+                                  post['likes'].contains(currentUser!.uid)
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  size: 20,
+                                  color: post['likes'].contains(currentUser!.uid)
+                                      ? Colors.red
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                '${post['likes'] != null ? (post['likes'] as List).length : 0}',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              ),
+                              SizedBox(width: 20),
+                              GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => CommentsModal(postId: doc.id),
+                                  );
+                                },
+                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                '${post['commentsCount'] ?? 0}',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              ),
+                              SizedBox(width: 20),
+                              GestureDetector(
+                                onTap: () async {
+                                  final postRef = FirebaseFirestore.instance.collection('posts').doc(doc.id);
+                                  if (post['bookmarkedBy'].contains(currentUser!.uid)) {
+                                    await postRef.update({
+                                      'bookmarkedBy': FieldValue.arrayRemove([currentUser!.uid]),
+                                    });
+                                  } else {
+                                    await postRef.update({
+                                      'bookmarkedBy': FieldValue.arrayUnion([currentUser!.uid]),
+                                    });
+                                  }
+                                },
+                                child: Icon(
+                                  post['bookmarkedBy'].contains(currentUser!.uid)
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_border,
+                                  size: 20,
+                                  color: post['bookmarkedBy'].contains(currentUser!.uid)
+                                      ? Color(0xFFB91C1C)
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
+import 'dart:html' as html; // For web reload
 import 'firebase_service.dart';
 import 'all_posts.dart';
 import 'auth_page.dart';
@@ -243,12 +244,8 @@ class _AccountSettingPageState extends State<AccountSettingPage> {
                                             backgroundColor: Colors.red,
                                           ),
                                         );
-                                        // Navigate to login page (replace with your AuthPage route)
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => AuthPage()),
-                                          (route) => false,
-                                        );
+                                        // For web: force a full reload to clear session
+                                        html.window.location.reload();
                                       } catch (e) {
                                         Navigator.of(context, rootNavigator: true).pop();
                                         ScaffoldMessenger.of(context).showSnackBar(

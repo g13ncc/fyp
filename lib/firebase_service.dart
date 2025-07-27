@@ -139,10 +139,8 @@ class FirebaseService {
       
       // Update display name
       await result.user?.updateDisplayName(displayName);
-      
-      // Create user document in Firestore
-      await createUserDocument(result.user!);
-      
+      // Create user document in Firestore with correct displayName
+      await createUserDocument(result.user!, displayName: displayName);
       return result;
     } catch (e) {
       print('Error signing up: $e');
@@ -179,18 +177,17 @@ class FirebaseService {
   }
 
   // Create user document in Firestore
-  static Future<void> createUserDocument(User user) async {
+static Future<void> createUserDocument(User user, {required String displayName}) async {
     try {
       await _firestore.collection(USERS_COLLECTION).doc(user.uid).set({
         'uid': user.uid,
         'email': user.email,
-        'displayName': user.displayName ?? 'Anonymous',
+        'displayName': displayName,
         'username': '',
         'bio': '',
         'phone': '',
         'profileImageBase64': '',
         'createdAt': FieldValue.serverTimestamp(),
-
         'postsCount': 0,
         'likesCount': 0,
       });
