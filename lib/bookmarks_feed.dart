@@ -201,12 +201,26 @@ class BookmarksFeedPage extends StatelessWidget {
                                     builder: (context) => CommentsModal(postId: doc.id),
                                   );
                                 },
-                                child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                '${post['commentsCount'] ?? 0}',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey[600]),
+                                    SizedBox(width: 4),
+                                    StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection('posts')
+                                          .doc(doc.id)
+                                          .collection('comments')
+                                          .snapshots(),
+                                      builder: (context, snapshot) {
+                                        final commentCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                                        return Text(
+                                          '$commentCount',
+                                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                               SizedBox(width: 20),
                               GestureDetector(

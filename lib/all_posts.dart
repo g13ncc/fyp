@@ -8,6 +8,7 @@ import 'firebase_service.dart';
 import 'main.dart';
 import 'app_bottom_navigation.dart';
 import 'comments_modal.dart';
+import 'rewards_scanner_page.dart';
 
 class AllPostsPage extends StatefulWidget {
   const AllPostsPage({super.key});
@@ -363,6 +364,40 @@ class _AllPostsPageState extends State<AllPostsPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Color(0xFFB91C1C),
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                'S',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RewardsScannerPage()),
+            );
+          },
+          tooltip: 'Rewards Scanner',
+        ),
         title: Text(
           'All Posts',
           style: TextStyle(
