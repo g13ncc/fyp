@@ -88198,7 +88198,7 @@ if(this.d){s=A.an(r)
 l.push(A.ce(q,A.cl(A.df(A.b([A.hw(q,q,new A.p7(A.an(p),t.ZU)),A.as(q,20,q),A.aj("Loading Gensecure AI Chatbot...",q,q,q,A.aH(q,q,B.w,q,q,q,q,q,q,q,q,16,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q)],n),B.B,B.cs,B.u),q,q),B.n,s,q,q,q,q,q,q,q,q,q))}return A.lU(m,o,A.m2(B.ce,l,B.D,B.c3),q)}}
 A.aos.prototype={
 $1(a){var s,r=document.createElement("iframe")
-r.src="assets/chatbot.html"
+r.src="assets/assets/chatbot.html"
 s=r.style
 s.border="none"
 s=r.style

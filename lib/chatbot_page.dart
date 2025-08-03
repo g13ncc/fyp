@@ -29,7 +29,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
       'chatbot-html',
       (int viewId) {
         final iframe = html.IFrameElement();
-        iframe.src = 'assets/chatbot.html';
+        iframe.src = 'assets/assets/chatbot.html';
         iframe.style.border = 'none';
         iframe.style.width = '100%';
         iframe.style.height = '100%';
