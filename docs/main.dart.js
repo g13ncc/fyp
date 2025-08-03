@@ -88807,7 +88807,7 @@ if(this.d)n.push(A.ce(s,A.cl(A.df(A.b([A.hw(s,s,new A.p7(A.an(r),t.ZU)),A.as(s,2
 return A.lU(o,q,A.m2(B.ce,n,B.D,B.c3),s)}}
 A.au0.prototype={
 $1(a){var s,r=document.createElement("iframe")
-r.src="assets/qr-scanner.html"
+r.src="assets/assets/qr-scanner.html"
 s=r.style
 s.border="none"
 s=r.style

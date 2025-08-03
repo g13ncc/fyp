@@ -29,7 +29,7 @@ class _RewardsScannerPageState extends State<RewardsScannerPage> {
       'qr-scanner-html',
       (int viewId) {
         final iframe = html.IFrameElement();
-        iframe.src = 'assets/qr-scanner.html';
+        iframe.src = 'assets/assets/qr-scanner.html';
         iframe.style.border = 'none';
         iframe.style.width = '100%';
         iframe.style.height = '100%';
