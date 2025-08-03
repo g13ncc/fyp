@@ -9,6 +9,7 @@ import 'main.dart';
 import 'app_bottom_navigation.dart';
 import 'comments_modal.dart';
 import 'rewards_scanner_page.dart';
+import 'chatbot_page.dart';
 
 class AllPostsPage extends StatefulWidget {
   const AllPostsPage({super.key});
