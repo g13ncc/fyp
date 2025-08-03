@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenSecure Multilingual Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(to bottom right, #ffe6e6, #fff5f5);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      min-height: 80vh;
+      position: relative;
+    }
+    .navbar {
+      background-color: #b40000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .navbar img {
+      height: 40px;
+    }
+    .app-title {
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+    .chatbox {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .chat-message {
+      margin: 1rem 0;
+      display: flex;
+      animation: fadeIn 0.4s ease-in;
+    }
+    .chat-message.user {
+      justify-content: flex-end;
+    }
+    .chat-message.bot {
+      justify-content: flex-start;
+    }
+    .bubble {
+      max-width: 70%;
+      padding: 1rem;
+      border-radius: 15px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .chat-message.user .bubble {
+      background: #0074cc;
+      color: white;
+    }
+    .chat-message.bot .bubble {
+      background: #b40000;
+      color: white;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border-top: 1px solid #eee;
+      position: sticky;
+      bottom: 0;
+      background: white;
+      flex-wrap: wrap;
+    }
+    select, input, button {
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    select {
+      padding: 0.5rem 0.75rem;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem 1rem;
+    }
+    button {
+      background: #b40000;
+      color: white;
+      padding: 0.75rem 1.2rem;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .mic-icon {
+      width: 18px;
+      height: 18px;
+      fill: white;
+    }
+    .typing {
+      display: flex;
+      gap: 5px;
+      margin-left: 1rem;
+      align-items: center;
+    }
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #888;
+      border-radius: 50%;
+      animation: blink 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="navbar">
+      <span class="app-title">GenSecure Multilingual Chatbot</span>
+    </div>
+    <div class="chatbox" id="chatbox">
+      <div class="chat-message bot">
+        <div class="bubble">Welcome to our Multilingual insurance chatbot! Ask me anything about insurance in English, 中文, Bahasa Melayu, or தமிழ்! 😊</div>
+      </div>
+    </div>
+    <div class="input-row">
+      <select id="langSelect">
+        <option value="en">English</option>
+        <option value="zh-CN">中文</option>
+        <option value="ms-MY">Bahasa Melayu</option>
+        <option value="ta-IN">தமிழ்</option>
+      </select>
+      <input type="text" id="userInput" placeholder="Type your question..." />
+      <button onclick="sendMessage()">Send</button>
+      <button onclick="startListening()">
+        <svg class="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2zM11 18h2v3h-2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+        <span id="voiceText">Voice</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chatbox");
+    const langSelect = document.getElementById("langSelect");
+    const voiceText = document.getElementById("voiceText");
+
+    langSelect.addEventListener("change", () => {
+      const lang = langSelect.value;
+      document.documentElement.lang = lang;
+      if (lang === "zh-CN") voiceText.textContent = "语音";
+      else if (lang === "ms-MY") voiceText.textContent = "Suara";
+      else if (lang === "ta-IN") voiceText.textContent = "குரல்";
+      else voiceText.textContent = "Voice";
+    });
+
+    function appendMessage(text, sender = 'bot') {
+      const message = document.createElement('div');
+      message.classList.add('chat-message', sender);
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+
+      if (
+        (text.startsWith("http") && text.match(/\.(png|jpg|jpeg|webp|gif)(\?.*)?$/)) ||
+        text.startsWith("data:image/")
+      ) {
+        bubble.innerHTML = `<img src="${text.trim()}" style="max-width:100%; border-radius:10px;">`;
+      } else {
+        bubble.innerHTML = text;
+      }
+
+      message.appendChild(bubble);
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendTyping() {
+      const typingDiv = document.createElement('div');
+      typingDiv.classList.add('chat-message', 'bot');
+      typingDiv.innerHTML = `
+        <div class="typing">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>`;
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return typingDiv;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      if (!message) return;
+
+      appendMessage(message, 'user');
+      input.value = '';
+      const typingBubble = appendTyping();
+
+      try {
+        const res = await fetch('https://n8n.codeblazar.org/webhook/fyp-voice-chatbot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: message })
+        });
+
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+
+        const data = await res.json();
+        chatBox.removeChild(typingBubble);
+
+        if (data.message) appendMessage(data.message, 'bot');
+        if (data.output) appendMessage(data.output, 'bot');
+        if (data.roadmapImage) appendMessage(data.roadmapImage, 'bot');
+
+      } catch (err) {
+        chatBox.removeChild(typingBubble);
+        appendMessage("❌ Error: " + err.message, 'bot');
+      }
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = langSelect.value;
+      recognition.start();
+
+      recognition.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
+      };
+    }
+  </script>
+</body>
+</html>
