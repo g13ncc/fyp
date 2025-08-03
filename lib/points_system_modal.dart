@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+//note! this is for the points system modal only for future use!! 23000237, glenda
 class PointsSystemModal extends StatelessWidget {
   const PointsSystemModal({super.key});
 
@@ -119,8 +119,6 @@ class PointsSystemModal extends StatelessWidget {
                     ),
                     
                     SizedBox(height: 32),
-                    
-                    // Stats (followers/following) removed
                     
                     SizedBox(height: 24),
                     

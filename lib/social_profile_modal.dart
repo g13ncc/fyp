@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'points_system_modal.dart';
-
+//note! this is for the social profile modal only for future use!! 23000237, glenda
 class SocialProfileModal extends StatefulWidget {
   const SocialProfileModal({super.key});
 
@@ -86,7 +86,7 @@ class _SocialProfileModalState extends State<SocialProfileModal> {
                     
                     SizedBox(height: 16),
                     
-                    // Full Name
+                    // Name
                     Text(
                       'Full Name',
                       style: TextStyle(
@@ -97,12 +97,10 @@ class _SocialProfileModalState extends State<SocialProfileModal> {
                     ),
                     
                     SizedBox(height: 20),
-                    
-                    // Follow/Unfollow buttons removed
+                  
                     
                     SizedBox(height: 24),
                     
-                    // Stats (followers/following) removed
                     
                     SizedBox(height: 24),
                     

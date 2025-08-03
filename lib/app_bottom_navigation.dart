@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'all_posts.dart';
-// import 'following_feed.dart';
 import 'likes_feed.dart';
 import 'bookmarks_feed.dart';
 import 'my_profile_page.dart';

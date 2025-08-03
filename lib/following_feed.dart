@@ -242,7 +242,7 @@ class FollowingFeedPage extends StatelessWidget {
                                 // Comment button
                                 GestureDetector(
                                   onTap: () {
-                                    // Show comments modal (implement if needed)
+                                    // Show comments modal 
                                   },
                                   child: Row(
                                     children: [
@@ -272,7 +272,6 @@ class FollowingFeedPage extends StatelessWidget {
               },
             ),
           ),
-          // New post button removed as requested
         ],
       ),
       

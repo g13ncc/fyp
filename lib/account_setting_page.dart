@@ -18,7 +18,6 @@ class AccountSettingPage extends StatefulWidget {
 class _AccountSettingPageState extends State<AccountSettingPage> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  // Removed username and phone controllers
   final TextEditingController _bioController = TextEditingController();
 
   String? _profileImageBase64;
@@ -38,7 +37,6 @@ class _AccountSettingPageState extends State<AccountSettingPage> {
     // Use Firestore if available, else fallback to Auth user info
     _fullNameController.text = (data?['displayName'] ?? user.displayName ?? '');
     _emailController.text = (data?['email'] ?? user.email ?? '');
-    // Removed username and phone fields
     _bioController.text = (data?['bio'] ?? '');
     _profileImageBase64 = data?['profileImageBase64'] ?? '';
     setState(() { _loading = false; });
@@ -149,18 +147,15 @@ class _AccountSettingPageState extends State<AccountSettingPage> {
                       _buildFormField('Email', '', _emailController),
                       SizedBox(height: 16),
                       
-                      // Removed Username and Phone fields
                       
                       // Bio Field (single instance)
                       _buildFormField('Bio', '', _bioController),
                       SizedBox(height: 32),
                       
                       // Public Profile Field
-                      // (Public Profile field removed)
                       
                       SizedBox(height: 24),
-                      
-                      // Removed duplicate Bio section
+
                       
                       // Save Button
                       SizedBox(
@@ -360,7 +355,6 @@ class _AccountSettingPageState extends State<AccountSettingPage> {
   void dispose() {
     _fullNameController.dispose();
     _emailController.dispose();
-    // Removed username and phone controllers
     _bioController.dispose();
     super.dispose();
   }

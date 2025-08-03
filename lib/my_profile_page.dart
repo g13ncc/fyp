@@ -251,7 +251,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                 },
               ),
               SizedBox(height: 20),
-              // Rating Section (unchanged)
+              // Rating Section
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(

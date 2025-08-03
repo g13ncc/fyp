@@ -255,5 +255,4 @@ class LikesFeedPage extends StatelessWidget {
       bottomNavigationBar: AppBottomNavigation(currentPage: 'likes'),
     );
   }
-// ...existing code up to end of build method...
 }

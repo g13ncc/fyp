@@ -68,7 +68,6 @@ class _AllPostsPageState extends State<AllPostsPage> {
       );
     }
   }
-  // Removed unused _deletePost method (use _deletePostAndComments only)
 
   Widget _buildPostCard(Map<String, dynamic> post, String postId, String? profileImageBase64) {
     final currentUser = FirebaseService.getCurrentUser();
@@ -526,7 +525,6 @@ class _AllPostsPageState extends State<AllPostsPage> {
       ),
       // Bottom Navigation Bar
       bottomNavigationBar: AppBottomNavigation(currentPage: 'home'),
-      // Floating action button removed as requested
     );
   }
 }
